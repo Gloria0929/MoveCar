@@ -1,0 +1,35 @@
+services:
+  app:
+    build: .
+    image: rangyirang-move-car:latest
+    container_name: move-car
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      # 可选：启用内置 HTTPS 时打开
+      # - "3443:3443"
+    environment:
+      NODE_ENV: production
+      # 公网访问地址（决定二维码里的链接，务必改成你的域名/公网 IP）
+      PUBLIC_BASE_URL: https://test.com
+      # 服务端签名密钥，务必改成一段长随机字符串
+      SECRET_KEY: cUe0MdFrgNV01mCGb2kRCbMajvyDAJftEY0taFkStY0=
+      # ---- 可选：定位反查地址（高德 Web 服务 Key）----
+      # AMAP_KEY: ""
+      # ---- 可选：真实短信通道（阿里云）----
+      # SMS_PROVIDER: aliyun
+      # SMS_ACCESS_KEY_ID: ""
+      # SMS_ACCESS_KEY_SECRET: ""
+      # SMS_SIGN_NAME: ""
+      # SMS_TEMPLATE_ID: ""
+      # SMS_REGION: cn-hangzhou
+      # ---- 可选：内置 HTTPS（挂载证书后取消注释）----
+      # HTTPS_KEY: /certs/key.pem
+      # HTTPS_CERT: /certs/cert.pem
+    volumes:
+      - move-car-data:/app/server/data
+      # 可选：启用内置 HTTPS，挂载真实证书
+      # - ./certs:/certs:ro
+
+volumes:
+  move-car-data:

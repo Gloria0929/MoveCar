@@ -1,0 +1,23 @@
+{
+  "name": "rangyirang-move-car",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "让一让 · 扫码挪车 H5",
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.cjs",
+    "dev:server": "node --watch server/src/index.js",
+    "dev:web": "npm run dev -w web",
+    "build": "node scripts/build-web.cjs",
+    "start": "node server/src/index.js",
+    "seed": "node server/src/seed.js",
+    "test:e2e": "node server/test/e2e.cjs"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
