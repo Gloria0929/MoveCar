@@ -188,11 +188,27 @@ const server = app.listen(config.port, () => {
   ├──────────────────────────────────────────────┤
   │   服务地址   ${base.padEnd(32)}│
   │   运行环境   ${config.nodeEnv.padEnd(32)}│
-  │   通知通道   sms=${String(channelInfo.sms).padEnd(26)}│
+  │   通知通道   sms=${String(channelInfo.sms).padEnd(26)}  │
   │   数据库     ${path.basename(config.dbFile).padEnd(32)}│
   └──────────────────────────────────────────────┘
   `);
   if (!hasDist) console.log('  [!] 未检测到 web/dist，请执行 npm run build 构建前端\n');
+});
+
+// 端口被占用时给一句人话，而不是抛出一整屏 EADDRINUSE 堆栈
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`
+  [x] 端口 ${config.port} 已被占用，无法启动。
+      多半是上一次的服务还在后台跑着。先找到它：
+        lsof -i :${config.port}      # 或 ss -ltnp | grep :${config.port}
+      然后结束：
+        kill <PID>
+      结束掉再重新执行 npm start 即可。
+`);
+    process.exit(1);
+  }
+  throw err;
 });
 
 // ---------- 可选 HTTPS：手机浏览器只在 https 下允许定位 ----------
@@ -206,6 +222,15 @@ if (fs.existsSync(config.https.keyFile) && fs.existsSync(config.https.certFile))
       },
       app,
     );
+    httpsServer.on('error', (err) => {
+      // 只关掉 HTTPS 分支，HTTP 端口继续服务，不拖垮整个进程
+      console.error(`
+  [x] HTTPS 端口 ${config.https.port} 启动失败：${err.code === 'EADDRINUSE' ? '端口已被占用' : err.message}
+      HTTP 服务仍在 ${config.port} 端口正常运行。
+      若需要 HTTPS（手机端定位），先释放端口：lsof -i :${config.https.port}
+`);
+      httpsServer = null;
+    });
     httpsServer.listen(config.https.port, () => {
       console.log(`  [https] 已启用：https://<本机IP>:${config.https.port}  （自签名证书，首次访问需手动信任）\n`);
     });

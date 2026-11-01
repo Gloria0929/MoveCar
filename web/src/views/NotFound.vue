@@ -10,49 +10,80 @@ const router = useRouter();
     <div class="mark"><Icon name="alert" :size="28" /></div>
     <h1>页面走丢了</h1>
     <p>你访问的地址不存在，或者链接已经过期。</p>
-    <button class="btn btn-primary" @click="router.replace('/')">回到首页</button>
+    <div class="acts">
+      <button class="btn btn-primary" @click="router.replace('/')">回到首页</button>
+      <a class="back-link" href="/mine">我的车贴</a>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .notfound {
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
-  text-align: center;
+  min-height: 100vh;
+  padding: var(--sp-600) var(--sp-300);
   background: var(--bg);
+  text-align: center;
 }
 
 .mark {
-  width: 66px;
-  height: 66px;
-  border-radius: 22px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--sp-300);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
   color: var(--ink-3);
-  margin-bottom: 18px;
 }
 
 h1 {
-  font-size: 21px;
-  font-weight: 800;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 p {
-  margin: 8px 0 24px;
-  font-size: 12.5px;
+  max-width: 280px;
+  margin: var(--sp-75) 0 var(--sp-400);
   color: var(--ink-3);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  text-wrap: pretty;
+}
+
+.acts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-100);
 }
 
 .btn {
-  height: 46px;
-  padding: 0 28px;
+  min-height: 48px;
+  padding: 0 var(--sp-300);
+  font-size: 16px;
+}
+
+.back-link {
+  padding: var(--sp-75) var(--sp-100);
+  border-radius: var(--radius-sm);
+  color: var(--ink-3);
   font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  transition: color var(--dur-300) var(--ease);
+}
+
+.back-link:hover {
+  color: var(--ink);
 }
 </style>

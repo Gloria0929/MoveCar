@@ -157,30 +157,35 @@ async function submit() {
 <style scoped>
 .create-page {
   min-height: 100vh;
-  padding-bottom: calc(30px + var(--safe-b));
+  padding-bottom: calc(var(--sp-500) + var(--safe-b));
   background: var(--bg);
 }
 
 .head {
+  padding: var(--sp-200) var(--sp-200) var(--sp-300);
   text-align: center;
-  padding: 14px 22px 18px;
 }
 
 .head h1 {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.4px;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .sub {
-  margin-top: 7px;
-  font-size: 12.5px;
+  margin-top: var(--sp-75);
   color: var(--ink-3);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  text-wrap: pretty;
 }
 
 .form-card {
-  margin: 0 16px;
-  padding: 16px 14px 6px;
+  margin: 0 var(--sp-200);
+  padding: var(--sp-200);
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
@@ -189,47 +194,59 @@ async function submit() {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  margin-bottom: 14px;
+  gap: var(--sp-75);
   min-width: 0;
+  margin-bottom: var(--sp-200);
 }
 
 .field-row {
   display: flex;
-  gap: 10px;
+  gap: var(--sp-100);
 }
 
 .field-row .field {
   flex: 1;
+  min-width: 0;
 }
 
 .label {
-  font-size: 12px;
-  font-weight: 600;
   color: var(--ink-2);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
 }
 
 .field input {
-  height: 46px;
-  padding: 0 13px;
-  border-radius: 12px;
-  border: 1.5px solid var(--line);
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--sp-100);
+  border: 0;
+  border-radius: var(--radius-md);
   background: var(--bg);
-  font-size: 14px;
+  box-shadow: inset 0 0 0 1px var(--line);
   color: var(--ink);
+  font-size: 16px;
+  line-height: 24px;
   outline: none;
-  transition: border-color 0.16s ease, background 0.16s ease;
+  transition:
+    box-shadow var(--dur-300) var(--ease),
+    background var(--dur-300) var(--ease);
+}
+
+.field input::placeholder {
+  color: var(--ink-muted);
 }
 
 .field input:focus {
-  border-color: var(--brand);
-  background: #fff;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1.5px var(--brand);
 }
 
 .hint {
-  font-size: 10.5px;
   color: var(--ink-3);
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
 }
 
 .hint.bad {
@@ -239,48 +256,61 @@ async function submit() {
 .colors {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: var(--sp-75);
 }
 
 .color {
-  height: 32px;
-  padding: 0 13px;
-  border-radius: 10px;
-  border: 1.5px solid var(--line);
+  height: 36px;
+  padding: 0 var(--sp-100);
+  border-radius: var(--radius-sm);
   background: var(--bg);
-  font-size: 12px;
+  box-shadow: inset 0 0 0 1px var(--line);
   color: var(--ink-2);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  transition:
+    background var(--dur-300) var(--ease),
+    box-shadow var(--dur-300) var(--ease),
+    color var(--dur-300) var(--ease),
+    transform var(--dur-300) var(--ease);
+}
+
+.color:active {
+  transform: scale(0.98);
 }
 
 .color.on {
-  border-color: var(--brand);
   background: var(--brand-soft);
+  box-shadow: inset 0 0 0 1.5px var(--brand);
   color: var(--brand-dark);
   font-weight: 600;
 }
 
-.btn-block {
-  width: calc(100% - 32px);
-  margin: 18px 16px 0;
-  height: 50px;
+.form-card + .btn-block {
+  width: auto;
+  margin: var(--sp-300) var(--sp-200) 0;
+  min-height: 52px;
 }
 
 .err-tip {
-  margin: 12px 20px 0;
-  font-size: 11.5px;
-  line-height: 1.6;
+  margin: var(--sp-100) var(--sp-200) 0;
   color: var(--danger);
+  font-size: 14px;
+  line-height: 20px;
   text-align: center;
+  text-wrap: pretty;
 }
 
 .foot {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  margin: 14px 24px 0;
-  font-size: 10.5px;
+  gap: var(--sp-50);
+  margin: var(--sp-200) var(--sp-300) 0;
   color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
   text-align: center;
 }
 </style>

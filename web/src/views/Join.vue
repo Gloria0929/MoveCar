@@ -52,8 +52,8 @@ onMounted(async () => {
   <div class="join-page">
     <AppHeader title="添加这台设备" back />
 
-    <div v-if="state === 'loading'" class="state">
-      <div class="spinner" />
+    <div v-if="state === 'loading'" class="state" aria-busy="true">
+      <div class="dots" aria-hidden="true"><i /><i /><i /></div>
       <p>正在验证授权码...</p>
     </div>
 
@@ -84,47 +84,72 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   min-height: 62vh;
-  gap: 12px;
-  padding: 0 30px;
-  text-align: center;
+  gap: var(--sp-100);
+  padding: 0 var(--sp-400);
   color: var(--ink-3);
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
 }
 
 .state h1 {
-  font-size: 19px;
-  font-weight: 800;
   color: var(--ink);
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .state p {
-  font-size: 12.5px;
-  line-height: 1.7;
-  max-width: 280px;
+  max-width: 288px;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  text-wrap: pretty;
 }
 
-.spinner {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 2.5px solid var(--line-strong);
-  border-top-color: var(--brand);
-  animation: spin 0.8s linear infinite;
+/* 加载态：三点呼吸，贴合“正在验证”的短等待 */
+.dots {
+  display: flex;
+  gap: var(--sp-50);
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+.dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--brand);
+  animation: dot 1.2s var(--ease) infinite;
+}
+
+.dots i:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.dots i:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@keyframes dot {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px);
   }
 }
 
 .badge {
-  width: 60px;
-  height: 60px;
-  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius);
 }
 
 .badge.ok {
@@ -138,8 +163,9 @@ onMounted(async () => {
 }
 
 .btn {
-  margin-top: 10px;
-  height: 44px;
-  padding: 0 22px;
+  min-height: 44px;
+  margin-top: var(--sp-100);
+  padding: 0 var(--sp-300);
+  font-size: 14px;
 }
 </style>

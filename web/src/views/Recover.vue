@@ -130,43 +130,48 @@ onMounted(() => {
 <style scoped>
 .recover-page {
   min-height: 100vh;
-  padding-bottom: calc(30px + var(--safe-b));
+  padding-bottom: calc(var(--sp-500) + var(--safe-b));
   background: var(--bg);
 }
 
 .head {
+  padding: var(--sp-300) var(--sp-300) var(--sp-200);
   text-align: center;
-  padding: 18px 26px 16px;
 }
 
 .ico {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 12px;
-  border-radius: 18px;
-  background: var(--brand-soft);
-  color: var(--brand-dark);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--sp-100);
+  border-radius: var(--radius);
+  background: var(--brand-soft);
+  color: var(--brand-dark);
 }
 
 .head h1 {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .head p {
-  margin-top: 9px;
-  font-size: 12px;
-  line-height: 1.7;
+  max-width: 300px;
+  margin: var(--sp-75) auto 0;
   color: var(--ink-3);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  text-wrap: pretty;
 }
 
 .card {
-  margin: 0 16px;
-  padding: 16px 14px 14px;
+  margin: 0 var(--sp-200);
+  padding: var(--sp-200);
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
@@ -175,32 +180,42 @@ onMounted(() => {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  margin-bottom: 14px;
+  gap: var(--sp-75);
+  margin-bottom: var(--sp-200);
 }
 
 .label {
-  font-size: 12px;
-  font-weight: 600;
   color: var(--ink-2);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
 }
 
 .input {
   width: 100%;
-  height: 46px;
-  padding: 0 13px;
-  border-radius: 12px;
-  border: 1.5px solid var(--line);
+  height: 48px;
+  padding: 0 var(--sp-100);
+  border: 0;
+  border-radius: var(--radius-md);
   background: var(--bg);
-  font-size: 14px;
+  box-shadow: inset 0 0 0 1px var(--line);
   color: var(--ink);
-  outline: none;
   font-family: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  outline: none;
+  transition:
+    box-shadow var(--dur-300) var(--ease),
+    background var(--dur-300) var(--ease);
+}
+
+.input::placeholder {
+  color: var(--ink-muted);
 }
 
 .input:focus {
-  border-color: var(--brand);
-  background: #fff;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1.5px var(--brand);
 }
 
 .input[readonly] {
@@ -209,37 +224,41 @@ onMounted(() => {
 
 .area {
   height: auto;
-  padding: 11px 13px;
-  line-height: 1.6;
+  padding: var(--sp-100);
+  line-height: 22px;
+  letter-spacing: 0.04em;
   resize: none;
-  letter-spacing: 0.6px;
 }
 
 .hint {
-  font-size: 10.5px;
   color: var(--ink-3);
+  font-size: 12px;
+  line-height: 16px;
 }
 
+/* 内联错误：说明哪里不对、下一步怎么做 */
 .err {
-  margin-bottom: 12px;
-  padding: 9px 11px;
-  border-radius: 10px;
-  background: rgba(200, 60, 60, 0.08);
-  color: #b23b3b;
-  font-size: 11.5px;
-  line-height: 1.6;
+  margin-bottom: var(--sp-100);
+  padding: var(--sp-100);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: #a83838;
+  font-size: 14px;
+  line-height: 20px;
+  text-wrap: pretty;
 }
 
 .btn-block {
   width: 100%;
-  height: 48px;
+  min-height: 50px;
 }
 
 .foot {
-  margin-top: 12px;
-  font-size: 10.5px;
-  line-height: 1.65;
+  margin-top: var(--sp-100);
   color: var(--ink-3);
+  font-size: 12px;
+  line-height: 18px;
   text-align: center;
+  text-wrap: pretty;
 }
 </style>

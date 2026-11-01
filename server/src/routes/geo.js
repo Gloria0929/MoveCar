@@ -55,7 +55,9 @@ router.get(
       return ok(res, { address: '', configured: true, error: data.info || '地理编码失败' });
     }
 
-    const address = data.regeocode?.formatted_address || '';
+    // 高德在无人区 / 洋面上会返回空数组 [] 而不是空串，直接透传后前端会拿到非字符串
+    const raw = data.regeocode?.formatted_address;
+    const address = typeof raw === 'string' ? raw : '';
     return ok(res, { address, configured: true });
   }),
 );

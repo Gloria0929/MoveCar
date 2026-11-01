@@ -33,7 +33,7 @@ function onConfirm(value) {
         <Icon name="car" :size="18" />
         {{ placeholder }}
       </span>
-      <Icon name="edit" :size="15" class="plate-edit" />
+      <Icon name="edit" :size="16" class="plate-edit" />
     </button>
 
     <PlateKeyboard v-model="open" :value="normalized" @confirm="onConfirm" />
@@ -44,70 +44,68 @@ function onConfirm(value) {
 .plate-field {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-100);
   width: 100%;
-  height: 54px;
-  padding: 0 12px;
-  border-radius: 13px;
-  background: #fff;
-  border: 1.5px solid var(--line);
+  height: 56px;
+  padding: 0 var(--sp-100);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
   text-align: left;
-  transition: border-color 0.18s ease, background 0.18s ease;
+  transition:
+    box-shadow var(--dur-300) var(--ease),
+    background var(--dur-300) var(--ease),
+    transform var(--dur-300) var(--ease);
 }
 
 .plate-field:active {
-  border-color: var(--brand);
+  transform: scale(0.98);
+  box-shadow: inset 0 0 0 1.5px var(--brand);
 }
 
 .plate-field.empty {
   background: var(--bg);
-  border-style: dashed;
-  border-color: var(--line-strong);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
 .plate-hint {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 13px;
+  gap: var(--sp-75);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
   color: var(--ink-3);
 }
 
-/* 燃油车牌：深蓝金属质感 */
+/* 车牌面：纯色底 + 内描边，不做背景渐变 */
 .plate-face {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 118px;
+  min-width: 120px;
   height: 36px;
-  padding: 0 13px;
-  border-radius: 7px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 46%),
-    linear-gradient(160deg, #2f68c9 0%, #1d4d9f 55%, #153d85 100%);
+  padding: 0 var(--sp-100);
+  border-radius: var(--radius-sm);
+  background: #1d4d9f;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.24),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.16),
-    0 3px 10px rgba(21, 61, 133, 0.22);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 2px 8px rgba(21, 61, 133, 0.2);
   color: #fff;
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.9px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.16);
 }
 
-/* 新能源车牌：渐变绿 */
 .plate-face.green {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0) 46%),
-    linear-gradient(160deg, #d9f19b 0%, #b7e272 52%, #96cf58 100%);
-  color: #17300f;
+  background: #a8d964;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.5),
-    inset 0 -1px 2px rgba(90, 130, 40, 0.16),
-    0 3px 10px rgba(126, 180, 60, 0.22);
-  text-shadow: none;
+    0 2px 8px rgba(126, 180, 60, 0.2);
+  color: #17300f;
 }
 
 .plate-edit {

@@ -138,12 +138,12 @@ function confirm() {
 
 <template>
   <teleport to="body">
-    <transition name="fade">
+    <transition name="pk-fade">
       <div v-if="modelValue" class="pk-mask" @click="close" />
     </transition>
 
     <transition name="pk-slide">
-      <div v-if="modelValue" class="pk-panel" role="dialog" aria-modal="true">
+      <div v-if="modelValue" class="pk-panel" role="dialog" aria-modal="true" aria-label="输入车牌号">
         <header class="pk-head">
           <button class="pk-cancel" @click="close">取消</button>
           <h3>输入车牌号</h3>
@@ -229,7 +229,8 @@ function confirm() {
   inset: 0;
   z-index: 300;
   background: rgba(10, 31, 26, 0.45);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 
 .pk-panel {
@@ -239,18 +240,26 @@ function confirm() {
   z-index: 301;
   width: 100%;
   max-width: 480px;
+  padding-bottom: calc(var(--sp-75) + var(--safe-b));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--bg);
+  box-shadow: 0 -12px 40px rgba(10, 31, 26, 0.18);
   transform: translateX(-50%);
-  background: #f3f5f2;
-  border-radius: 22px 22px 0 0;
-  box-shadow: 0 -18px 44px rgba(10, 31, 26, 0.2);
-  padding-bottom: calc(10px + var(--safe-b));
+}
+
+.pk-fade-enter-active,
+.pk-fade-leave-active {
+  transition: opacity var(--dur-300) var(--ease);
+}
+.pk-fade-enter-from,
+.pk-fade-leave-to {
+  opacity: 0;
 }
 
 .pk-slide-enter-active,
 .pk-slide-leave-active {
-  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform var(--dur-500) var(--ease);
 }
-
 .pk-slide-enter-from,
 .pk-slide-leave-to {
   transform: translate(-50%, 100%);
@@ -261,75 +270,96 @@ function confirm() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 50px;
-  padding: 0 14px;
+  height: 52px;
+  padding: 0 var(--sp-200);
 }
 
 .pk-head h3 {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .pk-cancel,
 .pk-done {
-  font-size: 13px;
-  padding: 8px 4px;
-  color: var(--ink-2);
   z-index: 1;
+  padding: var(--sp-75) var(--sp-50);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--ink-2);
+  transition:
+    color var(--dur-300) var(--ease),
+    transform var(--dur-300) var(--ease);
+}
+
+.pk-cancel:active,
+.pk-done:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .pk-done {
   color: var(--brand-dark);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .pk-done:disabled {
   color: var(--ink-3);
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
-/* ---- 格子 ---- */
+/* ---- 车牌格子 ---- */
 .pk-cells {
   display: flex;
   justify-content: center;
-  gap: 5px;
-  padding: 2px 14px 10px;
+  gap: var(--sp-50);
+  padding: 0 var(--sp-200) var(--sp-100);
 }
 
 .pk-cell {
-  flex: 1;
-  max-width: 42px;
-  height: 46px;
-  border-radius: 8px;
-  background: #fff;
-  border: 1.5px solid var(--line-strong);
+  position: relative;
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  font-size: 19px;
-  font-weight: 800;
+  max-width: 44px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
   color: var(--ink);
-  position: relative;
-  transition: border-color 0.16s ease, background 0.16s ease;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition:
+    box-shadow var(--dur-300) var(--ease),
+    background var(--dur-300) var(--ease),
+    transform var(--dur-300) var(--ease);
+}
+
+.pk-cell:active {
+  transform: scale(0.98);
 }
 
 .pk-cells.dense .pk-cell {
-  max-width: 38px;
+  max-width: 40px;
   height: 44px;
   font-size: 18px;
+  line-height: 28px;
 }
 
 .pk-cell.filled {
-  border-color: rgba(14, 159, 142, 0.45);
-  background: #fff;
+  box-shadow: inset 0 0 0 1px rgba(14, 159, 142, 0.4);
 }
 
 .pk-cell.active {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 2.5px rgba(14, 159, 142, 0.14);
+  box-shadow: inset 0 0 0 2px var(--brand);
 }
 
 .caret {
@@ -346,106 +376,116 @@ function confirm() {
   }
 }
 
-/* ---- 新能源 ---- */
+/* ---- 新能源开关 ---- */
 .pk-ne-wrap {
   display: flex;
   justify-content: center;
-  padding: 0 14px 10px;
+  padding: 0 var(--sp-200) var(--sp-100);
 }
 
 .pk-ne {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0 12px 0 9px;
-  border-radius: 15px;
-  background: #fff;
-  border: 1px solid var(--line);
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--ink-3);
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  gap: var(--sp-75);
+  height: 32px;
+  padding: 0 var(--sp-100);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--ink-2);
+  transition:
+    background var(--dur-300) var(--ease),
+    color var(--dur-300) var(--ease),
+    transform var(--dur-300) var(--ease);
+}
+
+.pk-ne:active {
+  transform: scale(0.98);
 }
 
 .pk-ne.on {
   background: #e9f8ef;
-  border-color: rgba(28, 160, 90, 0.38);
+  box-shadow: inset 0 0 0 1px rgba(28, 160, 90, 0.38);
   color: #12783f;
 }
 
 .ne-check {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  border: 1.5px solid var(--line-strong);
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1.5px var(--line-strong);
   color: #fff;
-  flex-shrink: 0;
-  transition: background 0.18s ease, border-color 0.18s ease;
+  transition: background var(--dur-300) var(--ease);
 }
 
 .pk-ne.on .ne-check {
   background: #1ca05a;
-  border-color: #1ca05a;
+  box-shadow: inset 0 0 0 1.5px #1ca05a;
 }
 
 .ne-count {
-  font-size: 10px;
+  padding-left: var(--sp-75);
+  box-shadow: inset 1px 0 0 var(--line);
+  font-size: 12px;
+  line-height: 16px;
   font-weight: 500;
   color: var(--ink-3);
-  padding-left: 6px;
-  border-left: 1px solid var(--line);
-  line-height: 1;
 }
 
 .pk-ne.on .ne-count {
   color: #1ca05a;
-  border-left-color: rgba(28, 160, 90, 0.3);
+  box-shadow: inset 1px 0 0 rgba(28, 160, 90, 0.3);
 }
 
 /* ---- 键盘 ---- */
 .pk-board {
-  padding: 0 8px;
+  padding: 0 var(--sp-75);
 }
 
 .pk-grid.province {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  gap: var(--sp-50);
 }
 
 .pk-row {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 5px;
-  margin-bottom: 5px;
+  gap: var(--sp-50);
+  margin-bottom: var(--sp-50);
 }
 
 .pk-grid.digit .pk-row {
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
 }
 
 .pk-key {
-  height: 40px;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow: 0 1px 0 rgba(10, 31, 26, 0.12);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.1s ease, transform 0.1s ease;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(10, 31, 26, 0.08);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  transition:
+    background var(--dur-200) var(--ease),
+    transform var(--dur-200) var(--ease);
 }
 
 .pk-key:active {
-  background: #e6ebe6;
-  transform: scale(0.97);
+  background: var(--surface-2);
+  transform: scale(0.98);
 }
 
 .pk-grid.digit .pk-key {
@@ -454,15 +494,16 @@ function confirm() {
 
 .pk-grid.digit .pk-key.num {
   font-size: 20px;
-  font-weight: 700;
+  line-height: 28px;
 }
 
 .pk-key.fn {
-  background: #e3e8e3;
+  gap: var(--sp-25);
+  background: var(--surface-2);
   box-shadow: none;
-  font-size: 13px;
   color: var(--ink-2);
-  gap: 3px;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 .pk-key.fn:disabled {
@@ -471,23 +512,24 @@ function confirm() {
 
 .pk-letter-tools {
   display: flex;
-  gap: 6px;
-  margin-top: 6px;
+  gap: var(--sp-50);
+  margin-top: var(--sp-50);
 }
 
 .pk-letter-tools .pk-key {
   flex: 1;
-  height: 42px;
+  height: 44px;
 }
 
 .pk-key.wide {
-  gap: 5px;
+  gap: var(--sp-50);
 }
 
 .pk-tip {
+  padding-top: var(--sp-75);
   text-align: center;
-  font-size: 10.5px;
+  font-size: 12px;
+  line-height: 16px;
   color: var(--ink-3);
-  padding: 9px 0 0;
 }
 </style>
