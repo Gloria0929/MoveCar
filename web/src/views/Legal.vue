@@ -90,7 +90,7 @@ const terms = [
     <AppHeader :title="isPrivacy ? '隐私政策' : '使用条款'" />
 
     <div class="container legal-body">
-      <p class="updated">最后更新：2026 年 1 月</p>
+      <p class="updated">最后更新：2026 年 10 月</p>
 
       <p class="intro">
         {{ isPrivacy
