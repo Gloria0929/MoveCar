@@ -2,6 +2,7 @@
 import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import Icon from '../components/Icon.vue';
+import BrandMark from '../components/BrandMark.vue';
 import QrArt from '../components/QrArt.vue';
 import { listOwnedCodes } from '../ownerToken.js';
 
@@ -128,7 +129,7 @@ onBeforeUnmount(() => {
         <div class="sticker">
           <div class="st-top">
             <div class="st-brand">
-              <span class="st-logo"><Icon name="carmove" :size="13" /></span>
+              <BrandMark :size="22" />
               让一让
             </div>
             <div class="st-qr"><QrArt :size="25" color="#0A1F1A" /></div>
@@ -217,12 +218,7 @@ onBeforeUnmount(() => {
 
     <footer class="foot container">
       <div class="foot-brand-row">
-        <span class="foot-logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-            <rect x="3" y="5" width="18" height="14" rx="4" stroke="currentColor" stroke-width="1.8" />
-            <path d="M7.5 12h9M12 8.5v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
-        </span>
+        <BrandMark :size="24" />
         <p class="foot-brand">让一让</p>
       </div>
       <p class="foot-note">扫码挪车 · 隐私优先，不收集与挪车无关的信息</p>
@@ -256,17 +252,6 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: var(--sp-75);
-}
-
-.logo-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  background: var(--ink);
-  color: #fff;
 }
 
 .logo-text {
@@ -465,17 +450,6 @@ onBeforeUnmount(() => {
   font-weight: 500;
   letter-spacing: 0.04em;
   color: var(--ink);
-}
-
-.st-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-sm);
-  background: var(--brand);
-  color: #fff;
 }
 
 .st-qr {
@@ -826,12 +800,6 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   gap: var(--sp-75);
-}
-
-/* 页脚品牌用品牌色，和页面主体产生一次视觉呼应，而不是灰成一团 */
-.foot-logo {
-  display: flex;
-  color: var(--brand);
 }
 
 .foot-brand {
