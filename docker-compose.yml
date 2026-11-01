@@ -8,10 +8,13 @@ services:
       - "3000:3000"
       # 可选：启用内置 HTTPS 时打开
       # - "3443:3443"
+    # 接入 nginx 所在的 app-net，否则 nginx 无法通过 move-car:3000 回源
+    networks:
+      - app-net
     environment:
       NODE_ENV: production
       # 公网访问地址（决定二维码里的链接，务必改成你的域名/公网 IP）
-      PUBLIC_BASE_URL: https://test.com
+      PUBLIC_BASE_URL: https://movecar.blackwing.icu
       # 服务端签名密钥，务必改成一段长随机字符串
       SECRET_KEY: cUe0MdFrgNV01mCGb2kRCbMajvyDAJftEY0taFkStY0=
       # ---- 可选：定位反查地址（高德 Web 服务 Key）----
@@ -30,6 +33,10 @@ services:
       - move-car-data:/app/server/data
       # 可选：启用内置 HTTPS，挂载真实证书
       # - ./certs:/certs:ro
+
+networks:
+  app-net:
+    external: true
 
 volumes:
   move-car-data:
