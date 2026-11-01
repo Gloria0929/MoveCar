@@ -48,8 +48,9 @@ function open(code) {
   <div class="mine-page">
     <AppHeader title="我的车贴" back />
 
-    <div v-if="loading" class="state" aria-busy="true" aria-label="正在读取本机车贴">
-      <div v-for="n in 2" :key="n" class="sk-card" />
+    <div v-if="loading" class="state">
+      <div class="spinner" />
+      <p>正在读取本机车贴...</p>
     </div>
 
     <div v-else-if="items.length" class="wrap">
@@ -91,7 +92,7 @@ function open(code) {
     <div v-else class="wrap">
       <Empty icon="qr" title="这台手机还没有车贴" desc="生成一张专属挪车码，贴上车窗就能用">
         <button class="btn btn-primary empty-btn" @click="router.push('/create')">免费生成挪车码</button>
-        <button class="btn btn-ghost empty-btn" @click="router.push('/recover')">用恢复码找回</button>
+        <button class="btn btn-ghost empty-btn second" @click="router.push('/recover')">用恢复码找回</button>
       </Empty>
       <p class="tip center">车贴只保存在本机，换设备或清理浏览器数据后需要重新生成</p>
     </div>
@@ -101,91 +102,68 @@ function open(code) {
 <style scoped>
 .mine-page {
   min-height: 100vh;
-  padding-bottom: calc(var(--sp-500) + var(--safe-b));
+  padding-bottom: calc(30px + var(--safe-b));
   background: var(--bg);
 }
 
-/* 加载态：骨架贴合真实卡片形状，不用转圈 */
 .state {
-  padding: var(--sp-200) var(--sp-200) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 55vh;
+  gap: 13px;
+  font-size: 13px;
+  color: var(--ink-3);
 }
 
-.sk-card {
-  height: 92px;
-  margin-bottom: var(--sp-100);
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  animation: sk-pulse 1.6s var(--ease) infinite;
+.spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line-strong);
+  border-top-color: var(--brand);
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes sk-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.55;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
 .wrap {
-  padding: var(--sp-100) var(--sp-200) 0;
+  padding: 4px 16px 0;
 }
 
 .tip {
-  margin: 0 var(--sp-50) var(--sp-100);
+  margin: 4px 4px 12px;
+  font-size: 11px;
+  line-height: 1.6;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 400;
-  text-wrap: pretty;
 }
 
 .tip.center {
-  margin: var(--sp-200) var(--sp-100) 0;
   text-align: center;
-}
-
-.tip.warn {
-  padding: var(--sp-100);
-  border-radius: var(--radius-sm);
-  background: var(--warn-soft);
-  color: var(--warn);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.tip .link {
-  margin-left: var(--sp-50);
-  padding: 0;
-  color: inherit;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  margin: 8px 12px 0;
 }
 
 .card {
   display: flex;
   align-items: center;
-  gap: var(--sp-100);
+  gap: 12px;
   width: 100%;
-  margin-bottom: var(--sp-100);
-  padding: var(--sp-200);
+  padding: 15px 15px 14px;
+  margin-bottom: 10px;
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   text-align: left;
-  transition:
-    transform var(--dur-300) var(--ease),
-    box-shadow var(--dur-300) var(--ease);
+  transition: transform 0.14s ease;
 }
 
 .card:active {
-  transform: scale(0.98);
-  box-shadow: var(--shadow);
+  transform: scale(0.985);
 }
 
 .card-main {
@@ -194,38 +172,33 @@ function open(code) {
 }
 
 .plate {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
   color: var(--ink);
-  font-size: 20px;
-  line-height: 28px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
 }
 
 .model {
-  margin-top: var(--sp-25);
-  overflow: hidden;
+  margin-top: 3px;
+  font-size: 11.5px;
   color: var(--ink-3);
-  font-size: 14px;
-  line-height: 20px;
-  white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stats {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--sp-75);
-  margin-top: var(--sp-75);
+  gap: 9px;
+  margin-top: 8px;
+  font-size: 10.5px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
 }
 
 .stats .pending {
-  padding: var(--sp-25) var(--sp-75);
-  border-radius: var(--radius-sm);
+  padding: 2px 7px;
+  border-radius: 7px;
   background: var(--warn-soft);
   color: var(--warn);
   font-weight: 600;
@@ -237,21 +210,20 @@ function open(code) {
 
 .card-side {
   display: flex;
-  flex: none;
   flex-direction: column;
   align-items: flex-end;
-  gap: var(--sp-100);
+  gap: 10px;
   color: var(--ink-3);
+  flex-shrink: 0;
 }
 
 .status {
-  padding: var(--sp-25) var(--sp-75);
-  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  border-radius: 8px;
   background: var(--brand-soft);
   color: var(--brand-dark);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .status.off {
@@ -261,12 +233,33 @@ function open(code) {
 
 .more {
   width: 100%;
-  margin-top: var(--sp-75);
-  min-height: 48px;
+  height: 46px;
+  margin-top: 6px;
+  font-size: 13.5px;
 }
 
 .empty-btn {
+  margin-top: 18px;
+  height: 46px;
   width: 190px;
-  min-height: 48px;
+}
+
+.empty-btn.second {
+  margin-top: 9px;
+}
+
+.tip.warn {
+  padding: 9px 11px;
+  border-radius: 11px;
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.tip .link {
+  margin-left: 4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 700;
+  color: inherit;
 }
 </style>

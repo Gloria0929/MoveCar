@@ -4,14 +4,7 @@ import { store } from '../store.js';
 
 <template>
   <transition name="pop">
-    <div
-      v-if="store.toast"
-      :key="store.toast.key"
-      class="toast"
-      :class="store.toast.type"
-      role="status"
-      aria-live="polite"
-    >
+    <div v-if="store.toast" :key="store.toast.key" class="toast" :class="store.toast.type">
       {{ store.toast.message }}
     </div>
   </transition>
@@ -22,30 +15,26 @@ import { store } from '../store.js';
   position: fixed;
   left: 50%;
   bottom: calc(96px + var(--safe-b));
+  transform: translateX(-50%);
   z-index: 300;
   max-width: 78vw;
-  padding: var(--sp-100) var(--sp-200);
-  border-radius: var(--radius-md);
-  background: rgba(10, 31, 26, 0.94);
+  padding: 11px 18px;
+  border-radius: 14px;
+  background: rgba(10, 31, 26, 0.92);
   color: #fff;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  font-size: 13.5px;
+  line-height: 1.45;
   text-align: center;
-  text-wrap: pretty;
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 8px 24px rgba(10, 31, 26, 0.24);
+  box-shadow: 0 12px 28px rgba(10, 31, 26, 0.24);
   pointer-events: none;
-  /* 用 translate3d 保留水平居中，动效只碰 transform/opacity */
-  transform: translate3d(-50%, 0, 0);
 }
 
 .toast.success {
-  background: rgba(8, 110, 96, 0.96);
+  background: rgba(8, 110, 96, 0.95);
 }
 
 .toast.error {
-  background: rgba(176, 40, 40, 0.96);
+  background: rgba(176, 40, 40, 0.95);
 }
 </style>

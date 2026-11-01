@@ -145,23 +145,13 @@ function pickQuick(msg) {
   smsForm.value.message = msg;
 }
 
-// 逆地理编码失败时的兜底文案：坐标本身也是有效的位置信息，
-// 一定要写进输入框，否则用户点了「定位」却看到空文本框，会以为按钮坏了。
-function coordText(lat, lng) {
-  return `北纬 ${lat}，东经 ${lng}`;
-}
-
-// 地址可能很长，输入框会截断，但保留到 80 字基本够用
-const LOCATION_MAX = 80;
-
 function useLocation() {
   geoHint.value = '';
 
   // http 页面在手机上拿不到定位权限，先说清楚原因，避免用户以为是坏了
   if (!secureContext) {
-    geoHint.value =
-      '当前是 http 页面，手机浏览器禁止获取位置。请手动填写位置，或用 https 地址打开本页。';
-    toast('http 页面无法定位，请手动填写', 'error');
+    geoHint.value = '当前通过 http 访问，手机浏览器禁止定位。可手动填写位置，或改用 https 打开。';
+    toast('http 页面不支持定位，请手动填写位置', 'error');
     return;
   }
   if (!navigator.geolocation) {
@@ -178,24 +168,21 @@ function useLocation() {
     smsForm.value.lat = lat;
     smsForm.value.lng = lng;
 
-    // 先写兜底坐标：即使后面逆地理编码超时或被限流，输入框也不会是空的
-    smsForm.value.location = coordText(lat, lng);
+    // 坐标本身就是有效的位置信息，先写进去。否则用户点了「定位」看到空输入框，
+    // 会以为按钮坏了。
+    smsForm.value.location = `北纬 ${lat}，东经 ${lng}`;
 
-    // 有高德 Key 时自动把坐标换成易读地址
+    // 有高德 Key 时把坐标换成中文地址，没有或失败则保留坐标
     try {
       const geo = await api(`/geo/reverse?lat=${lat}&lng=${lng}`);
-      // 服务端已保证 address 一定是字符串，但旧版本可能透传空数组，这里再做一层防御
       if (typeof geo.address === 'string' && geo.address.trim()) {
-        smsForm.value.location = geo.address.trim().slice(0, LOCATION_MAX);
+        smsForm.value.location = geo.address.trim().slice(0, 60);
         toast('已定位并填入地址', 'success');
       } else {
-        geoHint.value = geo.configured
-          ? '已记录精确坐标，但地址解析暂不可用。车主可以在地图上看到位置。'
-          : '已记录精确坐标。配置地图 Key 后可自动显示文字地址。';
-        toast('已记录精确位置', 'success');
+        toast('已记录精确位置，车主可在地图上查看', 'success');
       }
     } catch (err) {
-      geoHint.value = `已记录精确坐标，地址解析失败（${err?.message || '网络异常'}）。车主仍可在地图上看到位置。`;
+      geoHint.value = `已记录精确坐标，地址解析失败（${err?.message || '网络异常'}），车主仍可在地图上看到位置。`;
       toast('已记录精确位置', 'success');
     } finally {
       locating.value = false;
@@ -217,30 +204,21 @@ function useLocation() {
   const onFail = (err) => {
     // 高精度定位在室内容易超时，降级用基站/WiFi 再试一次
     if (err?.code === 3) {
-      try {
-        navigator.geolocation.getCurrentPosition(
-          onSuccess,
-          onFinalFail,
-          { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
-        );
-      } catch {
-        onFinalFail(err);
-      }
+      navigator.geolocation.getCurrentPosition(
+        onSuccess,
+        onFinalFail,
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 },
+      );
       return;
     }
     onFinalFail(err);
   };
 
-  // 部分浏览器（尤其是权限被永久拒绝后）会直接抛异常而不是走 error 回调
-  try {
-    navigator.geolocation.getCurrentPosition(
-      onSuccess,
-      onFail,
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
-    );
-  } catch {
-    onFinalFail({ code: 1 });
-  }
+  navigator.geolocation.getCurrentPosition(
+    onSuccess,
+    onFail,
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+  );
 }
 
 function goResult(requestId) {
@@ -314,9 +292,9 @@ onMounted(load);
       </span>
     </header>
 
-    <div v-if="loading" class="state" aria-busy="true" aria-label="正在读取车贴信息">
-      <div class="sk-plate" />
-      <div class="sk-plate" />
+    <div v-if="loading" class="state">
+      <div class="spinner" />
+      <p>正在读取车贴信息...</p>
     </div>
 
     <div v-else-if="error" class="state error-state">
@@ -400,6 +378,7 @@ onMounted(load);
     <!-- 已激活：访客视角 -->
     <template v-else-if="data">
       <section class="car-card">
+        <div class="cc-glow" aria-hidden="true" />
         <p class="cc-eyebrow">车主已开启隐私保护</p>
         <h1 class="plate">{{ data.vehicle.plateMasked }}</h1>
         <p class="model">
@@ -527,20 +506,10 @@ onMounted(load);
 
         <p class="sheet-label">车辆位置（选填）</p>
         <div class="loc-row">
-          <input
-            v-model="smsForm.location"
-            class="input"
-            maxlength="80"
-            placeholder="地库 B2 层 A 区"
-          />
-          <button
-            class="loc-btn"
-            :class="{ done: smsForm.lat !== null }"
-            :disabled="locating"
-            @click="useLocation"
-          >
+          <input v-model="smsForm.location" class="input" maxlength="60" placeholder="地库 B2 层 A 区" />
+          <button class="loc-btn" :class="{ done: smsForm.lat }" @click="useLocation">
             <Icon name="pin" :size="14" />
-            {{ locating ? '定位中' : smsForm.lat !== null ? '已定位' : '定位' }}
+            {{ locating ? '定位中' : smsForm.lat ? '已定位' : '定位' }}
           </button>
         </div>
 
@@ -613,245 +582,236 @@ onMounted(load);
 <style scoped>
 .scan-page {
   min-height: 100vh;
+  padding: 0 18px calc(26px + var(--safe-b));
   max-width: 480px;
   margin: 0 auto;
-  padding: 0 var(--sp-200) calc(var(--sp-400) + var(--safe-b));
-  background: var(--bg);
+  background:
+    radial-gradient(120% 46% at 50% -8%, rgba(14, 159, 142, 0.13), transparent 62%),
+    var(--bg);
 }
 
 .bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
+  height: 58px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--sp-75);
+  gap: 7px;
   font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  letter-spacing: 0.8px;
 }
 
 .bm {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: var(--ink);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  background: var(--ink);
-  color: #fff;
 }
 
 .secure {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-50);
-  height: 26px;
-  padding: 0 var(--sp-75);
-  border-radius: var(--radius-sm);
-  background: var(--brand-soft);
+  gap: 4px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 8px;
+  background: rgba(14, 159, 142, 0.1);
   color: var(--brand-dark);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
+  font-size: 10.5px;
+  font-weight: 600;
 }
 
-/* ---- 加载 / 错误 ---- */
 .state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 62vh;
-  gap: var(--sp-100);
-  color: var(--ink-3);
-  font-size: 14px;
-  line-height: 20px;
   text-align: center;
+  color: var(--ink-3);
+  font-size: 13px;
 }
 
-.sk-plate {
-  width: 100%;
-  height: 168px;
-  margin-bottom: var(--sp-300);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  animation: sk-pulse 1.6s var(--ease) infinite;
+.spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line-strong);
+  border-top-color: var(--brand);
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 14px;
 }
 
-@keyframes sk-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.55;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
 .error-state h1 {
-  margin-top: var(--sp-100);
+  margin-top: 16px;
+  font-size: 19px;
+  font-weight: 800;
   color: var(--ink);
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
 }
 
 .error-state p {
-  max-width: 264px;
-  margin: 0 0 var(--sp-200);
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 400;
-  text-wrap: pretty;
+  margin: 8px 0 20px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  max-width: 250px;
 }
 
 .error-state .btn {
-  min-height: 44px;
-  padding: 0 var(--sp-300);
-  font-size: 14px;
+  height: 42px;
+  font-size: 13px;
 }
 
 .err-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: var(--radius);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
   color: var(--ink-3);
 }
 
-/* ---- 车辆卡：纯色深底，不做渐变 ---- */
+/* ---- 车辆卡 ---- */
 .car-card {
   position: relative;
   overflow: hidden;
-  padding: var(--sp-300) var(--sp-200) var(--sp-200);
-  border-radius: var(--radius-lg);
-  background: var(--brand-deep);
+  padding: 22px 20px 18px;
+  border-radius: 24px;
+  background: linear-gradient(150deg, #0a1f1a 0%, #11463b 60%, #0c5a4b 100%);
   color: #fff;
-  box-shadow: 0 12px 32px rgba(10, 31, 26, 0.2);
+  box-shadow: 0 20px 40px rgba(10, 31, 26, 0.24);
+}
+
+.cc-glow {
+  position: absolute;
+  top: -80px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(75, 227, 198, 0.26), transparent 70%);
 }
 
 .cc-eyebrow {
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0.04em;
+  position: relative;
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
   color: rgba(255, 255, 255, 0.6);
 }
 
 .plate {
-  margin-top: var(--sp-75);
-  font-size: 36px;
-  line-height: 40px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  position: relative;
+  margin-top: 8px;
+  font-size: 37px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1.15;
   font-variant-numeric: tabular-nums;
-  text-wrap: balance;
 }
 
 .model {
-  margin-top: var(--sp-50);
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 14px;
-  line-height: 20px;
+  position: relative;
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.66);
 }
 
 .cc-meta {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: var(--sp-75);
-  margin-top: var(--sp-200);
-  padding-top: var(--sp-100);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.54);
-  font-size: 12px;
-  line-height: 16px;
+  gap: 7px;
+  margin-top: 16px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.52);
 }
 
 .owner {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-50);
-  color: rgba(255, 255, 255, 0.8);
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.78);
   font-weight: 600;
 }
 
 .dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.36);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.34);
 }
 
 /* ---- 激活 ---- */
 .activate-head {
-  padding: var(--sp-300) var(--sp-75) var(--sp-200);
   text-align: center;
+  padding: 18px 6px 20px;
 }
 
 .ac-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 21px;
+  background: var(--brand-soft);
+  color: var(--brand-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto var(--sp-200);
-  border-radius: var(--radius);
-  background: var(--brand-soft);
-  color: var(--brand-dark);
 }
 
 .activate-head h1 {
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
 }
 
 .activate-head p {
-  margin-top: var(--sp-75);
+  margin-top: 8px;
+  font-size: 12.5px;
+  line-height: 1.7;
   color: var(--ink-2);
-  font-size: 14px;
-  line-height: 22px;
-  text-wrap: pretty;
 }
 
 .ac-code {
   display: inline-block;
-  margin-top: var(--sp-100);
-  padding: var(--sp-50) var(--sp-75);
-  border-radius: var(--radius-sm);
+  margin-top: 10px;
+  padding: 4px 10px;
+  border-radius: 7px;
   background: var(--surface-2);
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0.08em;
-  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  letter-spacing: 1.2px;
 }
 
 .ac-form {
-  padding: var(--sp-200);
-  border-radius: var(--radius);
   background: var(--surface);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
+  padding: 16px 15px 16px;
 }
 
 .field {
   display: block;
-  margin-bottom: var(--sp-200);
+  margin-bottom: 14px;
 }
 
 .field:last-child {
@@ -860,54 +820,40 @@ onMounted(load);
 
 .label {
   display: block;
-  margin-bottom: var(--sp-50);
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
 }
 
 .field input {
   width: 100%;
-  height: 48px;
-  padding: 0 var(--sp-100);
-  border: 0;
-  border-radius: var(--radius-md);
+  height: 45px;
+  padding: 0 13px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
   background: var(--bg);
-  box-shadow: inset 0 0 0 1px var(--line);
-  color: var(--ink);
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 14px;
   outline: none;
-  transition:
-    box-shadow var(--dur-300) var(--ease),
-    background var(--dur-300) var(--ease);
-}
-
-.field input::placeholder {
-  color: var(--ink-muted);
 }
 
 .field input:focus {
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1.5px var(--brand);
+  border-color: var(--brand);
+  background: #fff;
 }
 
 .plate-input {
-  font-size: 20px !important;
-  line-height: 28px !important;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 19px !important;
+  font-weight: 800;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
 }
 
 .hint {
   display: block;
-  margin-top: var(--sp-50);
+  margin-top: 5px;
+  font-size: 10px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
 }
 
 .hint.bad {
@@ -917,66 +863,55 @@ onMounted(load);
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-100);
+  gap: 10px;
 }
 
 .colors {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-75);
+  gap: 6px;
 }
 
 .color {
-  height: 34px;
-  padding: 0 var(--sp-100);
-  border-radius: var(--radius-sm);
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 9px;
   background: var(--surface-2);
   color: var(--ink-2);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  transition:
-    background var(--dur-300) var(--ease),
-    box-shadow var(--dur-300) var(--ease),
-    color var(--dur-300) var(--ease),
-    transform var(--dur-300) var(--ease);
-}
-
-.color:active {
-  transform: scale(0.98);
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1.5px solid transparent;
 }
 
 .color.on {
   background: var(--brand-soft);
-  box-shadow: inset 0 0 0 1.5px var(--brand);
+  border-color: var(--brand);
   color: var(--brand-dark);
-  font-weight: 600;
 }
 
 .act-submit {
-  margin-top: var(--sp-200);
-  min-height: 50px;
+  margin-top: 16px;
+  height: 48px;
 }
 
 .act-foot {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-50);
-  margin-top: var(--sp-100);
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 10px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
 }
 
-/* ---- 提示条 ---- */
+/* ---- 提示 ---- */
 .notice {
   display: flex;
   align-items: center;
-  gap: var(--sp-100);
-  margin-top: var(--sp-100);
-  padding: var(--sp-100) var(--sp-200);
-  border-radius: var(--radius-md);
+  gap: 10px;
+  margin-top: 12px;
+  padding: 13px 14px;
+  border-radius: 15px;
   background: var(--brand-soft);
   color: var(--brand-dark);
 }
@@ -986,98 +921,86 @@ onMounted(load);
   color: var(--warn);
 }
 
+
 .notice div {
   flex: 1;
-  min-width: 0;
 }
 
 .notice strong {
   display: block;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .notice p {
-  margin-top: var(--sp-25);
-  font-size: 12px;
-  line-height: 18px;
-  opacity: 0.82;
-  text-wrap: pretty;
+  font-size: 10.5px;
+  opacity: 0.78;
+  margin-top: 1px;
+  line-height: 1.45;
 }
 
 .notice-btn {
-  flex: none;
-  height: 32px;
-  padding: 0 var(--sp-100);
-  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 9px;
   background: var(--brand);
   color: #fff;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  transition: transform var(--dur-300) var(--ease);
-}
-
-.notice-btn:active {
-  transform: scale(0.98);
+  font-size: 11.5px;
+  font-weight: 700;
 }
 
 /* ---- 方式 ---- */
 .ask {
-  margin: var(--sp-300) var(--sp-25) var(--sp-100);
-  font-size: 18px;
-  line-height: 28px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  margin: 24px 2px 12px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
 }
 
 .ways {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-75);
+  gap: 9px;
 }
 
 .way {
   display: flex;
   align-items: center;
-  gap: var(--sp-100);
+  gap: 13px;
   width: 100%;
-  padding: var(--sp-200);
-  border-radius: var(--radius);
+  padding: 15px 16px;
+  border-radius: 18px;
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   text-align: left;
-  transition:
-    transform var(--dur-300) var(--ease),
-    box-shadow var(--dur-300) var(--ease);
+  transition: transform 0.14s ease;
 }
 
 .way:active {
-  transform: scale(0.98);
+  transform: scale(0.985);
 }
 
-/* 主方式：纯色品牌底 */
 .way.primary {
-  background: var(--brand);
+  background: linear-gradient(135deg, #0e9f8e, #0a7d70);
   color: #fff;
-  box-shadow: 0 8px 24px rgba(14, 159, 142, 0.24);
+  box-shadow: 0 14px 28px rgba(14, 159, 142, 0.3);
 }
 
 .w-icon {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-md);
+  border-radius: 14px;
   background: var(--brand-soft);
   color: var(--brand-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .way.primary .w-icon {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
   color: #fff;
 }
 
@@ -1088,35 +1011,32 @@ onMounted(load);
 
 .w-body strong {
   display: block;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
+  font-size: 14.5px;
+  font-weight: 700;
 }
 
 .w-body small {
   display: block;
-  margin-top: var(--sp-25);
+  margin-top: 2px;
+  font-size: 11px;
   color: var(--ink-3);
-  font-size: 14px;
-  line-height: 18px;
-  text-wrap: pretty;
+  line-height: 1.45;
 }
 
 .way.primary .w-body small {
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .w-tag {
-  display: flex;
-  flex: none;
-  align-items: center;
-  height: 22px;
-  padding: 0 var(--sp-75);
-  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  height: 21px;
+  padding: 0 8px;
+  border-radius: 7px;
   background: rgba(255, 255, 255, 0.22);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
 }
 
 .w-arrow {
@@ -1127,13 +1047,12 @@ onMounted(load);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-50);
-  margin-top: var(--sp-200);
+  gap: 5px;
+  margin-top: 16px;
+  font-size: 10.5px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 18px;
   text-align: center;
-  text-wrap: pretty;
+  line-height: 1.5;
 }
 
 /* ---- 加入 ---- */
@@ -1141,9 +1060,9 @@ onMounted(load);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-100);
-  margin-top: var(--sp-300);
-  padding: var(--sp-200);
+  gap: 12px;
+  margin-top: 24px;
+  padding: 14px 15px;
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
@@ -1152,62 +1071,51 @@ onMounted(load);
 .join-info {
   display: flex;
   align-items: center;
-  gap: var(--sp-100);
-  min-width: 0;
+  gap: 10px;
 }
 
 .join-icon {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   background: var(--ink);
   color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .join-info strong {
   display: block;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-weight: 700;
 }
 
 .join-info p {
-  margin-top: var(--sp-25);
+  font-size: 10.5px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
+  margin-top: 1px;
 }
 
 .join-btn {
-  flex: none;
-  height: 36px;
-  padding: 0 var(--sp-100);
-  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 10px;
   background: var(--brand-soft);
   color: var(--brand-dark);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  transition: transform var(--dur-300) var(--ease);
-}
-
-.join-btn:active {
-  transform: scale(0.98);
+  font-size: 11.5px;
+  font-weight: 700;
 }
 
 .owner-entry {
   display: block;
   width: 100%;
-  margin-top: var(--sp-100);
-  padding: var(--sp-75);
-  border-radius: var(--radius-sm);
+  margin-top: 10px;
+  padding: 6px;
+  font-size: 10.5px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -1215,27 +1123,26 @@ onMounted(load);
 .footer-note {
   display: flex;
   align-items: center;
-  gap: var(--sp-100);
-  margin-top: var(--sp-200);
-  padding: var(--sp-100);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
+  gap: 10px;
+  margin-top: 18px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line);
+  font-size: 10.5px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 18px;
-  text-wrap: pretty;
+  line-height: 1.55;
 }
 
 .footer-qr {
   display: block;
-  flex: 0 0 32px;
-  width: 32px;
-  height: 32px;
-  padding: var(--sp-25);
-  border-radius: var(--radius-sm);
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  padding: 2px;
+  border-radius: 6px;
   background: #fff;
-  box-shadow: inset 0 0 0 1px var(--line);
+  border: 1px solid var(--line);
   overflow: hidden;
 }
 
@@ -1247,196 +1154,139 @@ onMounted(load);
 
 /* ---- sheet 内容 ---- */
 .sheet-label {
-  margin: var(--sp-200) 0 var(--sp-75);
+  font-size: 11.5px;
+  font-weight: 700;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
+  margin: 14px 0 8px;
 }
 
 .sheet-label:first-child {
-  margin-top: var(--sp-50);
+  margin-top: 4px;
 }
 
 .quick-list {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-75);
+  gap: 7px;
 }
 
 .quick {
-  padding: var(--sp-75) var(--sp-100);
-  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  border-radius: 11px;
   background: var(--surface-2);
   color: var(--ink-2);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 11.5px;
+  line-height: 1.4;
   text-align: left;
-  transition:
-    background var(--dur-300) var(--ease),
-    box-shadow var(--dur-300) var(--ease),
-    color var(--dur-300) var(--ease),
-    transform var(--dur-300) var(--ease);
-}
-
-.quick:active {
-  transform: scale(0.98);
+  border: 1.5px solid transparent;
 }
 
 .quick.on {
   background: var(--brand-soft);
-  box-shadow: inset 0 0 0 1.5px var(--brand);
+  border-color: var(--brand);
   color: var(--brand-dark);
   font-weight: 600;
 }
 
 .textarea {
   width: 100%;
-  padding: var(--sp-100);
-  border: 0;
-  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  border-radius: 13px;
+  border: 1.5px solid var(--line);
   background: var(--bg);
-  box-shadow: inset 0 0 0 1px var(--line);
-  color: var(--ink);
-  font-size: 16px;
-  line-height: 24px;
-  outline: none;
+  font-size: 13.5px;
+  line-height: 1.6;
   resize: none;
-  transition:
-    box-shadow var(--dur-300) var(--ease),
-    background var(--dur-300) var(--ease);
-}
-
-.textarea::placeholder {
-  color: var(--ink-muted);
+  outline: none;
 }
 
 .textarea:focus {
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1.5px var(--brand);
+  border-color: var(--brand);
+  background: #fff;
 }
 
 .counter {
-  margin-top: var(--sp-50);
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
   text-align: right;
-  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  color: var(--ink-3);
+  margin-top: 4px;
 }
 
 .loc-row {
   display: flex;
-  gap: var(--sp-75);
+  gap: 8px;
 }
 
 .place-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-75);
-  margin-top: var(--sp-75);
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .place-chip {
-  height: 32px;
-  padding: 0 var(--sp-100);
-  border-radius: 999px;
+  height: 28px;
+  padding: 0 11px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
   background: var(--bg);
-  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 11px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
-  transition:
-    background var(--dur-300) var(--ease),
-    box-shadow var(--dur-300) var(--ease),
-    color var(--dur-300) var(--ease),
-    transform var(--dur-300) var(--ease);
-}
-
-.place-chip:active {
-  transform: scale(0.98);
 }
 
 .place-chip.on {
+  border-color: var(--brand);
   background: var(--brand-soft);
-  box-shadow: inset 0 0 0 1.5px var(--brand);
   color: var(--brand-dark);
   font-weight: 600;
 }
 
-/* 定位说明：内联、具体，不用 window.alert */
 .geo-hint {
   display: flex;
   align-items: flex-start;
-  gap: var(--sp-75);
-  margin-top: var(--sp-75);
-  padding: var(--sp-75) var(--sp-100);
-  border-radius: var(--radius-sm);
+  gap: 5px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
   background: var(--warn-soft);
   color: var(--warn);
-  font-size: 12px;
-  line-height: 18px;
-  text-wrap: pretty;
+  font-size: 10.5px;
+  line-height: 1.55;
 }
 
 .geo-hint svg {
-  flex: none;
-  margin-top: var(--sp-25);
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .input {
   width: 100%;
-  height: 48px;
-  padding: 0 var(--sp-100);
-  border: 0;
-  border-radius: var(--radius-md);
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 13px;
+  border: 1.5px solid var(--line);
   background: var(--bg);
-  box-shadow: inset 0 0 0 1px var(--line);
-  color: var(--ink);
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 13.5px;
   outline: none;
-  transition:
-    box-shadow var(--dur-300) var(--ease),
-    background var(--dur-300) var(--ease);
-}
-
-.input::placeholder {
-  color: var(--ink-muted);
 }
 
 .input:focus {
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1.5px var(--brand);
+  border-color: var(--brand);
+  background: #fff;
 }
 
 .loc-btn {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: var(--sp-50);
-  height: 48px;
-  padding: 0 var(--sp-100);
-  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  height: 46px;
+  padding: 0 13px;
+  border-radius: 13px;
   background: var(--surface-2);
   color: var(--ink-2);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  transition:
-    background var(--dur-300) var(--ease),
-    color var(--dur-300) var(--ease),
-    transform var(--dur-300) var(--ease);
-}
-
-.loc-btn:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.loc-btn:disabled {
-  opacity: 0.6;
-  cursor: progress;
+  font-size: 11.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .loc-btn.done {
@@ -1445,118 +1295,110 @@ onMounted(load);
 }
 
 .sheet-submit {
-  margin-top: var(--sp-200);
-  min-height: 50px;
+  margin-top: 18px;
+  height: 50px;
 }
 
 .sheet-foot {
-  margin-top: var(--sp-75);
-  color: var(--ink-3);
-  font-size: 12px;
-  line-height: 18px;
+  margin-top: 9px;
   text-align: center;
-  text-wrap: pretty;
+  font-size: 10.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
 }
 
 .sheet-foot.left {
-  margin-top: var(--sp-75);
   text-align: left;
+  margin-top: 7px;
 }
 
 .sheet-tip {
-  margin-bottom: var(--sp-200);
+  font-size: 13px;
+  line-height: 1.7;
   color: var(--ink-2);
-  font-size: 14px;
-  line-height: 22px;
-  text-wrap: pretty;
+  margin-bottom: 14px;
 }
 
 .sheet-tip strong {
   color: var(--brand-dark);
-  font-weight: 600;
 }
 
 .direct-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-100);
-  padding: var(--sp-200);
-  border-radius: var(--radius-md);
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 15px;
   background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
 }
 
 .dc-label {
+  font-size: 12px;
+  font-weight: 600;
   color: var(--ink-3);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
 }
 
 .dc-no {
-  color: var(--ink);
   font-size: 18px;
-  line-height: 28px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
 .call-btn {
-  margin-top: var(--sp-200);
-  min-height: 52px;
+  margin-top: 18px;
+  height: 52px;
 }
 
 .ok-hero {
-  padding: var(--sp-75) 0 var(--sp-200);
   text-align: center;
+  padding: 6px 0 16px;
 }
 
 .ok-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
-  margin: 0 auto var(--sp-200);
-  border-radius: 999px;
-  background: var(--brand);
-  color: #fff;
-  box-shadow: 0 8px 20px rgba(14, 159, 142, 0.28);
+  box-shadow: 0 12px 24px rgba(14, 159, 142, 0.3);
 }
 
 .ok-title {
-  font-size: 18px;
-  line-height: 28px;
-  font-weight: 600;
-  text-wrap: balance;
+  font-size: 17px;
+  font-weight: 800;
 }
 
 .ok-sub {
-  margin-top: var(--sp-50);
+  margin-top: 6px;
+  font-size: 12.5px;
+  line-height: 1.65;
   color: var(--ink-3);
-  font-size: 14px;
-  line-height: 20px;
-  text-wrap: pretty;
 }
 
 .ok-note {
   display: flex;
   align-items: flex-start;
-  gap: var(--sp-75);
-  margin-bottom: var(--sp-200);
-  padding: var(--sp-100);
-  border-radius: var(--radius-md);
+  gap: 7px;
+  margin-bottom: 16px;
+  padding: 11px 13px;
+  border-radius: 12px;
   background: var(--surface-2);
+  font-size: 11px;
+  line-height: 1.6;
   color: var(--ink-2);
-  font-size: 12px;
-  line-height: 18px;
-  text-wrap: pretty;
 }
 
 .ok-note svg {
-  flex: none;
-  margin-top: var(--sp-25);
   color: var(--brand);
+  margin-top: 1px;
+  flex-shrink: 0;
 }
 </style>

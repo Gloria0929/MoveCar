@@ -184,70 +184,70 @@ onBeforeUnmount(() => {
   min-height: 100vh;
   max-width: 480px;
   margin: 0 auto;
-  padding: 0 var(--sp-200) calc(var(--sp-400) + var(--safe-b));
-  background: var(--bg);
+  padding: 0 18px calc(30px + var(--safe-b));
+  background:
+    radial-gradient(120% 44% at 50% -6%, rgba(14, 159, 142, 0.14), transparent 60%),
+    var(--bg);
 }
 
 .bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
+  height: 58px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--sp-75);
+  gap: 7px;
   font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  letter-spacing: 0.8px;
 }
 
 .bm {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: var(--ink);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  background: var(--ink);
-  color: #fff;
 }
 
 .secure {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-50);
-  height: 26px;
-  padding: 0 var(--sp-75);
-  border-radius: var(--radius-sm);
-  background: var(--brand-soft);
+  gap: 4px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 8px;
+  background: rgba(14, 159, 142, 0.1);
   color: var(--brand-dark);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
+  font-size: 10.5px;
+  font-weight: 600;
 }
 
 .hero {
-  padding: var(--sp-300) var(--sp-200) var(--sp-300);
   text-align: center;
+  padding: 30px 16px 26px;
 }
 
 .ring {
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 96px;
-  height: 96px;
-  margin: 0 auto var(--sp-300);
-  border-radius: 999px;
   background: rgba(14, 159, 142, 0.1);
 }
 
 .ring.pulse {
-  animation: breathe 2.4s var(--ease) infinite;
+  animation: breathe 2.4s ease-in-out infinite;
 }
 
 @keyframes breathe {
@@ -256,20 +256,20 @@ onBeforeUnmount(() => {
     box-shadow: 0 0 0 0 rgba(14, 159, 142, 0.18);
   }
   50% {
-    box-shadow: 0 0 0 16px rgba(14, 159, 142, 0);
+    box-shadow: 0 0 0 14px rgba(14, 159, 142, 0);
   }
 }
 
 .icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 999px;
-  background: var(--brand);
-  color: #fff;
-  box-shadow: 0 8px 24px rgba(14, 159, 142, 0.3);
+  box-shadow: 0 12px 26px rgba(14, 159, 142, 0.34);
 }
 
 .hero.warn .ring {
@@ -278,7 +278,7 @@ onBeforeUnmount(() => {
 
 .hero.warn .icon-wrap {
   background: var(--warn);
-  box-shadow: 0 8px 24px rgba(201, 130, 31, 0.26);
+  box-shadow: 0 12px 26px rgba(201, 130, 31, 0.3);
 }
 
 .hero.muted .ring {
@@ -291,143 +291,126 @@ onBeforeUnmount(() => {
 }
 
 .hero h1 {
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
 }
 
 .sub {
-  max-width: 296px;
-  margin: var(--sp-75) auto 0;
+  margin-top: 8px;
+  font-size: 12.5px;
+  line-height: 1.65;
   color: var(--ink-2);
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 400;
-  text-wrap: pretty;
+  max-width: 290px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .timer {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-50);
-  margin-top: var(--sp-200);
-  padding: var(--sp-50) var(--sp-100);
-  border-radius: var(--radius-sm);
+  gap: 5px;
+  margin-top: 14px;
+  padding: 5px 11px;
+  border-radius: 9px;
   background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
+  border: 1px solid var(--line);
+  font-size: 10.5px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 16px;
   font-variant-numeric: tabular-nums;
 }
 
 .timer strong {
   color: var(--ink);
-  font-weight: 600;
 }
 
-/* ---- 信息卡 ---- */
 .card {
-  padding: 0 var(--sp-200);
-  border-radius: var(--radius);
   background: var(--surface);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
+  padding: 4px 16px;
 }
 
 .info .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-100);
-  padding: var(--sp-100) 0;
-  box-shadow: inset 0 -1px 0 var(--line);
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .info .row:last-child {
-  box-shadow: none;
+  border-bottom: none;
 }
 
 .k {
-  flex: none;
+  font-size: 12.5px;
   color: var(--ink-3);
-  font-size: 14px;
-  line-height: 20px;
 }
 
 .v {
-  min-width: 0;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .plate {
-  font-size: 16px;
-  line-height: 24px;
-  letter-spacing: 0.06em;
+  font-size: 14.5px;
+  letter-spacing: 0.8px;
   font-variant-numeric: tabular-nums;
 }
 
 .phone {
   color: var(--brand-dark);
-  letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.6px;
 }
 
-/* 车主回复：纯色深底 */
 .reply {
-  margin-top: var(--sp-100);
-  padding: var(--sp-200);
+  margin-top: 12px;
+  padding: 16px;
   border-radius: var(--radius);
-  background: #0b3d34;
+  background: linear-gradient(140deg, #0b3d34, #0e9f8e);
   color: #fff;
-  box-shadow: 0 8px 24px rgba(10, 31, 26, 0.18);
+  box-shadow: 0 16px 30px rgba(14, 159, 142, 0.24);
 }
 
 .r-head {
   display: flex;
   align-items: center;
-  gap: var(--sp-75);
+  gap: 9px;
 }
 
 .r-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.18);
 }
 
 .r-head strong {
   display: block;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .r-head span {
-  font-size: 12px;
-  line-height: 16px;
-  color: rgba(255, 255, 255, 0.62);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .r-text {
-  margin-top: var(--sp-100);
-  font-size: 16px;
-  line-height: 24px;
+  margin-top: 11px;
+  font-size: 15px;
+  line-height: 1.6;
   font-weight: 600;
-  text-wrap: pretty;
 }
 
-/* ---- 提示卡 ---- */
 .tip-card {
-  margin-top: var(--sp-100);
-  padding: var(--sp-200);
+  margin-top: 12px;
+  padding: 15px 16px;
   border-radius: var(--radius);
   background: var(--warn-soft);
 }
@@ -435,85 +418,79 @@ onBeforeUnmount(() => {
 .tip-title {
   display: flex;
   align-items: center;
-  gap: var(--sp-50);
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
   color: var(--warn);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
 }
 
 .tip-card ul {
+  margin-top: 9px;
+  padding-left: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-75);
-  margin-top: var(--sp-100);
-  list-style: none;
+  gap: 6px;
 }
 
 .tip-card li {
   position: relative;
-  padding-left: var(--sp-100);
+  padding-left: 13px;
+  font-size: 11.5px;
+  line-height: 1.55;
   color: #8a6220;
-  font-size: 14px;
-  line-height: 20px;
-  text-wrap: pretty;
 }
 
 .tip-card li::before {
   content: '';
   position: absolute;
-  top: 8px;
   left: 0;
+  top: 7px;
   width: 4px;
   height: 4px;
-  border-radius: 999px;
+  border-radius: 50%;
   background: var(--warn);
 }
 
 .actions {
   display: flex;
-  gap: var(--sp-100);
-  margin-top: var(--sp-200);
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .actions .btn {
   flex: 1;
-  min-height: 48px;
-  font-size: 16px;
+  height: 48px;
+  font-size: 14.5px;
 }
 
 .foot {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-50);
-  margin-top: var(--sp-200);
+  gap: 5px;
+  margin-top: 18px;
+  font-size: 10.5px;
   color: var(--ink-3);
-  font-size: 12px;
-  line-height: 18px;
   text-align: center;
-  text-wrap: pretty;
 }
 
 .error {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-100);
-  padding: var(--sp-800) var(--sp-200);
+  padding: 70px 20px;
   color: var(--ink-3);
+  gap: 14px;
   text-align: center;
 }
 
 .error p {
-  font-size: 14px;
-  line-height: 22px;
-  text-wrap: pretty;
+  font-size: 13px;
 }
 
 .error .btn {
-  min-height: 44px;
-  padding: 0 var(--sp-300);
-  font-size: 14px;
+  height: 42px;
+  font-size: 13px;
 }
 </style>

@@ -64,8 +64,7 @@ onBeforeUnmount(() => {
 });
 
 function swatchStyle(s) {
-  // 色板只做纯色示意，不用渐变
-  const bg = Array.isArray(s.bg) ? s.bg[0] : s.bg;
+  const bg = Array.isArray(s.bg) ? `linear-gradient(135deg, ${s.bg[0]}, ${s.bg[1]})` : s.bg;
   return { background: bg, borderColor: s.line };
 }
 
@@ -113,7 +112,7 @@ async function download() {
             @click="current = key"
           >
             <i class="swatch" :style="swatchStyle(s)" />
-            <span class="chip-label">{{ s.label }}</span>
+            {{ s.label }}
           </button>
         </div>
 
@@ -146,36 +145,33 @@ async function download() {
 <style scoped>
 .sticker-page {
   min-height: 100vh;
-  padding-bottom: calc(var(--sp-900) + var(--safe-b));
+  padding-bottom: calc(88px + var(--safe-b));
   background: var(--bg);
 }
 
 .wrap {
   max-width: 480px;
   margin: 0 auto;
-  padding: var(--sp-100) var(--sp-200) var(--sp-300);
+  padding: 8px 18px 20px;
 }
 
 .lead {
-  padding: 0 var(--sp-25) var(--sp-100);
+  font-size: 12.5px;
   color: var(--ink-2);
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 400;
-  text-wrap: pretty;
+  line-height: 1.65;
+  padding: 0 2px 12px;
 }
 
 .lead strong {
   color: var(--ink);
-  font-weight: 600;
 }
 
 .preview {
   position: relative;
+  border-radius: 20px;
   overflow: hidden;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: 0 8px 32px rgba(10, 31, 26, 0.12);
+  box-shadow: 0 18px 40px rgba(10, 31, 26, 0.14);
+  background: #fff;
 }
 
 .preview canvas {
@@ -184,138 +180,110 @@ async function download() {
   height: auto;
 }
 
-/* 骨架：贴合 canvas 尺寸的脉冲底，不用进度条 */
 .skeleton {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-2);
+  background: linear-gradient(100deg, #eef2ee 30%, #f8faf8 50%, #eef2ee 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  font-size: 12px;
   color: var(--ink-3);
-  font-size: 14px;
-  line-height: 20px;
-  animation: sk-pulse 1.6s var(--ease) infinite;
 }
 
-@keyframes sk-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
   }
 }
 
 .styles {
   display: flex;
-  gap: var(--sp-75);
-  margin-top: var(--sp-200);
+  gap: 6px;
+  margin-top: 14px;
 }
 
 .style-chip {
-  display: flex;
   flex: 1;
+  min-width: 0;
+  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-50);
-  /* min-width:0 允许收缩，nowrap 保证「扫码优先」四个字不会被切成两行 */
-  min-width: 0;
-  min-height: 56px;
-  padding: var(--sp-75) var(--sp-50);
-  border-radius: var(--radius-md);
+  gap: 5px;
+  height: 54px;
+  border-radius: 13px;
   background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
+  border: 1.5px solid var(--line);
   color: var(--ink-2);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition:
-    background var(--dur-300) var(--ease),
-    box-shadow var(--dur-300) var(--ease),
-    color var(--dur-300) var(--ease),
-    transform var(--dur-300) var(--ease);
-}
-
-.chip-label {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.style-chip:active {
-  transform: scale(0.98);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .style-chip.on {
+  border-color: var(--brand);
   background: var(--brand-soft);
-  box-shadow: inset 0 0 0 1.5px var(--brand);
   color: var(--brand-dark);
 }
 
 .swatch {
-  display: block;
-  flex: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 999px;
+  width: 14px;
+  height: 14px;
+  border-radius: 5px;
   border: 1px solid;
+  display: block;
+  flex-shrink: 0;
 }
 
 .tips-card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-100);
-  margin-top: var(--sp-200);
-  padding: var(--sp-200);
+  margin-top: 16px;
+  padding: 14px 15px;
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
 }
 
 .tip {
   display: flex;
   align-items: flex-start;
-  gap: var(--sp-75);
+  gap: 9px;
+  font-size: 11.5px;
   color: var(--ink-2);
-  font-size: 14px;
-  line-height: 20px;
-  text-wrap: pretty;
+  line-height: 1.55;
 }
 
 .tip svg {
-  flex: none;
-  margin-top: var(--sp-25);
   color: var(--brand);
+  margin-top: 1px;
 }
 
 .loading-card {
-  padding: var(--sp-800) 0;
-  color: var(--ink-3);
-  font-size: 14px;
+  padding: 60px 0;
   text-align: center;
+  color: var(--ink-3);
+  font-size: 13px;
 }
 
-/* 底部操作条：毛玻璃浮起，不压住内容 */
 .action-bar {
   position: fixed;
-  bottom: 0;
   left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  padding: var(--sp-100) var(--sp-200) calc(var(--sp-100) + var(--safe-b));
-  background: rgba(243, 246, 242, 0.9);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow: inset 0 1px 0 var(--line);
-  transform: translateX(-50%);
+  padding: 12px 18px calc(12px + var(--safe-b));
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--line);
 }
 
 .action-bar .btn {
-  min-height: 50px;
-  font-size: 16px;
+  height: 50px;
+  font-size: 15.5px;
 }
 </style>

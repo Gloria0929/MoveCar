@@ -15,9 +15,7 @@ defineProps({
     </div>
     <p class="title">{{ title }}</p>
     <p v-if="desc" class="desc">{{ desc }}</p>
-    <div v-if="$slots.default" class="actions">
-      <slot />
-    </div>
+    <slot />
   </div>
 </template>
 
@@ -26,45 +24,33 @@ defineProps({
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--sp-600) var(--sp-200) var(--sp-500);
+  padding: 44px 16px 36px;
   text-align: center;
 }
 
 .badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--ink-3);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  margin-bottom: var(--sp-200);
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--ink-3);
+  margin-bottom: 14px;
 }
 
 .title {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 14.5px;
   font-weight: 600;
-  color: var(--ink);
-  text-wrap: balance;
+  color: var(--ink-2);
 }
 
 .desc {
-  max-width: 272px;
-  margin-top: var(--sp-75);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 400;
+  margin-top: 5px;
+  font-size: 12.5px;
   color: var(--ink-3);
-  text-wrap: pretty;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-75);
-  justify-content: center;
-  margin-top: var(--sp-300);
+  max-width: 240px;
+  line-height: 1.6;
 }
 </style>

@@ -1,10 +1,4 @@
-/* ============================================================
-   设计令牌
-   字号严格落在 Tailwind 默认 scale 上，间距只用固定 token，
-   动效统一走 --ease（B7 基准曲线）。
-   ============================================================ */
 :root {
-  /* 表面与文字 */
   --bg: #f3f6f2;
   --bg-deep: #e9efe8;
   --surface: #ffffff;
@@ -12,18 +6,14 @@
   --ink: #0a1f1a;
   --ink-2: #43554f;
   --ink-3: #7f8f89;
-  --ink-muted: #a7b4ae;
   --line: #e3e9e3;
   --line-strong: #d3dcd4;
 
-  /* 品牌 */
   --brand: #0e9f8e;
   --brand-dark: #08786c;
-  --brand-deep: #0a2b26;
   --brand-soft: #e2f5f1;
   --brand-glow: rgba(14, 159, 142, 0.18);
 
-  /* 语义色 */
   --accent: #f97445;
   --accent-soft: #ffece4;
   --danger: #dd4b4b;
@@ -31,50 +21,20 @@
   --warn: #c9821f;
   --warn-soft: #fdf3e2;
 
-  /* 圆角：只用 Tailwind 值 */
-  --radius-sm: 8px;   /* rounded-lg */
-  --radius-md: 12px;  /* rounded-xl */
-  --radius: 16px;     /* rounded-2xl */
-  --radius-lg: 24px;  /* rounded-3xl */
+  --radius-sm: 12px;
+  --radius: 18px;
+  --radius-lg: 26px;
 
-  /* 阴影：收紧，靠层次不靠模糊 */
-  --shadow-sm: 0 1px 2px rgba(10, 31, 26, 0.04), 0 2px 8px rgba(10, 31, 26, 0.04);
-  --shadow: 0 4px 12px rgba(10, 31, 26, 0.06), 0 12px 32px rgba(10, 31, 26, 0.06);
-  --shadow-lg: 0 8px 24px rgba(10, 31, 26, 0.08), 0 24px 48px rgba(10, 31, 26, 0.1);
+  --shadow-sm: 0 2px 8px rgba(10, 31, 26, 0.05);
+  --shadow: 0 10px 30px rgba(10, 31, 26, 0.08);
+  --shadow-lg: 0 22px 48px rgba(10, 31, 26, 0.14);
 
-  /* 间距 token */
-  --sp-25: 2px;
-  --sp-50: 4px;
-  --sp-75: 8px;
-  --sp-100: 12px;
-  --sp-200: 16px;
-  --sp-300: 24px;
-  --sp-400: 32px;
-  --sp-500: 40px;
-  --sp-600: 48px;
-  --sp-700: 64px;
-  --sp-800: 80px;
-  --sp-900: 96px;
-
-  /* 字体：单一家族，中文优先回落到系统屏显字 */
-  --font: 'Manrope', -apple-system, BlinkMacSystemFont, 'PingFang SC',
-    'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  /* 动效基准曲线（B7） */
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --dur-200: 200ms;
-  --dur-300: 300ms;
-  --dur-500: 500ms;
-
+  --font: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+    'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
   --tab-h: 62px;
   --safe-b: env(safe-area-inset-bottom, 0px);
-  --safe-t: env(safe-area-inset-top, 0px);
 }
 
-/* ============================================================
-   基础重置
-   ============================================================ */
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -90,11 +50,9 @@ body {
   font-family: var(--font);
   background: var(--bg);
   color: var(--ink);
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
 }
 
@@ -104,8 +62,6 @@ body {
 
 button {
   font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
   cursor: pointer;
   border: none;
   background: none;
@@ -131,14 +87,6 @@ h3,
 h4,
 p {
   margin: 0;
-  text-wrap: pretty;
-}
-
-h1,
-h2,
-h3,
-h4 {
-  text-wrap: balance;
 }
 
 ul {
@@ -147,92 +95,17 @@ ul {
   list-style: none;
 }
 
-img,
-svg {
-  display: block;
-  max-width: 100%;
-}
-
-/* 键盘可达性：统一焦点环，鼠标点击不显示 */
-:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
-}
-
-/* 跳到主内容（B10），默认隐藏在视口外 */
-.skip-link {
-  position: fixed;
-  top: var(--sp-75);
-  left: var(--sp-75);
-  z-index: 999;
-  padding: var(--sp-75) var(--sp-200);
-  border-radius: var(--radius-md);
-  background: var(--ink);
-  color: #fff;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  transform: translateY(-200%);
-  transition: transform var(--dur-300) var(--ease);
-}
-
-.skip-link:focus-visible {
-  transform: translateY(0);
-}
-
-/* ============================================================
-   文本样式（B1）—— 每处文字只用这些命名样式
-   ============================================================ */
-.heading-1 { font-size: 60px; line-height: 60px; font-weight: 600; letter-spacing: -0.02em; }
-.heading-2 { font-size: 48px; line-height: 48px; font-weight: 600; letter-spacing: -0.02em; }
-.heading-3 { font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; }
-.heading-4 { font-size: 30px; line-height: 36px; font-weight: 600; letter-spacing: -0.02em; }
-.heading-5 { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.01em; }
-.heading-6 { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; }
-
-.title-1 { font-size: 20px; line-height: 28px; font-weight: 500; }
-.title-2 { font-size: 18px; line-height: 28px; font-weight: 500; }
-.title-3 { font-size: 16px; line-height: 24px; font-weight: 500; }
-.title-4 { font-size: 14px; line-height: 20px; font-weight: 500; }
-.title-5 { font-size: 12px; line-height: 16px; font-weight: 500; }
-
-.body-1 { font-size: 16px; line-height: 24px; font-weight: 500; }
-.body-2 { font-size: 16px; line-height: 24px; font-weight: 500; }
-.body-3 { font-size: 16px; line-height: 24px; font-weight: 400; }
-.body-4 { font-size: 14px; line-height: 20px; font-weight: 500; }
-.body-5 { font-size: 14px; line-height: 20px; font-weight: 500; }
-.body-6 { font-size: 14px; line-height: 20px; font-weight: 400; }
-
-.button-lg { font-size: 18px; line-height: 28px; font-weight: 500; }
-.button-md { font-size: 16px; line-height: 24px; font-weight: 500; }
-.button-sm { font-size: 14px; line-height: 20px; font-weight: 500; }
-.button-xsm { font-size: 12px; line-height: 16px; font-weight: 500; }
-
-.caption-1 { font-size: 14px; line-height: 20px; font-weight: 500; }
-.caption-2 { font-size: 14px; line-height: 20px; font-weight: 400; }
-.caption-3 { font-size: 12px; line-height: 16px; font-weight: 500; }
-.caption-4 { font-size: 12px; line-height: 16px; font-weight: 500; }
-.caption-5 { font-size: 12px; line-height: 16px; font-weight: 400; }
-
-/* 数字表格化：坐标、金额、时间不要跳动 */
-.tnum {
-  font-variant-numeric: tabular-nums;
-}
-
-/* ============================================================
-   布局原子类
-   ============================================================ */
+/* ---------- 通用原子类 ---------- */
 .page {
   min-height: 100vh;
-  padding-bottom: calc(var(--sp-300) + var(--safe-b));
+  padding-bottom: calc(24px + var(--safe-b));
 }
 
 .container {
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
-  padding: 0 var(--sp-200);
+  padding: 0 18px;
 }
 
 .card {
@@ -247,60 +120,43 @@ svg {
 
 .tiny {
   font-size: 12px;
-  line-height: 16px;
 }
 
-/* ============================================================
-   按钮（B9 完整状态）
-   ============================================================ */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-75);
-  min-height: 50px;
-  padding: var(--sp-75) var(--sp-100);
-  border-radius: var(--radius-md);
-  font-family: inherit;
+  gap: 8px;
+  height: 50px;
+  padding: 0 22px;
+  border-radius: 16px;
   font-size: 16px;
-  line-height: 24px;
   font-weight: 600;
-  text-align: center;
-  transition:
-    transform var(--dur-300) var(--ease),
-    background var(--dur-300) var(--ease),
-    box-shadow var(--dur-300) var(--ease),
-    opacity var(--dur-200) var(--ease);
+  letter-spacing: 0.2px;
+  transition: transform 0.14s ease, box-shadow 0.2s ease, background 0.2s ease;
   user-select: none;
 }
 
-.btn:active:not(:disabled) {
-  transform: scale(0.98);
+.btn:active {
+  transform: scale(0.975);
 }
 
 .btn:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .btn-primary {
   background: var(--brand);
   color: #fff;
-  box-shadow: 0 4px 12px var(--brand-glow);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--brand-dark);
+  box-shadow: 0 10px 22px var(--brand-glow);
 }
 
 .btn-ghost {
   background: var(--surface);
   color: var(--ink);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
 }
 
 .btn-soft {
@@ -308,77 +164,30 @@ svg {
   color: var(--brand-dark);
 }
 
-.btn-soft:hover:not(:disabled) {
-  background: #d3efe9;
-}
-
-.btn-danger {
-  background: var(--danger);
-  color: #fff;
-}
-
 .btn-block {
   width: 100%;
 }
 
-/* ============================================================
-   章节标题
-   ============================================================ */
 .section-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-100);
-  margin: var(--sp-300) 0 var(--sp-100);
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  margin: 26px 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .section-title .more {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--ink-3);
 }
 
-/* 药丸标签 */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-25);
-  padding: var(--sp-25) var(--sp-75);
-  border-radius: 999px;
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* 骨架屏（loading 态，形状贴合真实布局） */
-.skeleton-block {
-  border-radius: var(--radius-md);
-  background: var(--surface-2);
-  animation: skeleton-pulse 1.6s var(--ease) infinite;
-}
-
-@keyframes skeleton-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.55;
-  }
-}
-
-/* ============================================================
-   过渡（B7 统一曲线）
-   ============================================================ */
+/* ---------- 过渡 ---------- */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity var(--dur-300) var(--ease);
+  transition: opacity 0.2s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
@@ -387,9 +196,7 @@ svg {
 
 .slide-enter-active,
 .slide-leave-active {
-  transition:
-    transform var(--dur-500) var(--ease),
-    opacity var(--dur-300) var(--ease);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease;
 }
 .slide-enter-from,
 .slide-leave-to {
@@ -399,9 +206,7 @@ svg {
 
 .pop-enter-active,
 .pop-leave-active {
-  transition:
-    transform var(--dur-500) var(--ease),
-    opacity var(--dur-200) var(--ease);
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.18s ease;
 }
 .pop-enter-from,
 .pop-leave-to {
@@ -409,32 +214,9 @@ svg {
   opacity: 0;
 }
 
-/* 滚动揭示：只动 transform / opacity */
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 700ms var(--ease),
-    transform 700ms var(--ease);
-}
-
-.reveal.in {
-  opacity: 1;
-  transform: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  * {
     animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  .reveal {
-    opacity: 1;
-    transform: none;
   }
 }

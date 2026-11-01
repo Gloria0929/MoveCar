@@ -1,13 +1,16 @@
 <script setup>
-import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Icon from '../components/Icon.vue';
-import BrandMark from '../components/BrandMark.vue';
 import QrArt from '../components/QrArt.vue';
 import { listOwnedCodes } from '../ownerToken.js';
 
 const router = useRouter();
 const ownedCount = ref(0);
+
+onMounted(() => {
+  ownedCount.value = listOwnedCodes().length;
+});
 
 function start() {
   router.push('/create');
@@ -36,62 +39,17 @@ const features = [
     desc: '同一个人 10 分钟只能提醒一次，每日总量可自设上限。',
   },
 ];
-
-/* ---- Tagline 逐词揭示（B11） ---- */
-const tagWords = '不用把号码贴在车上，也能让被挡住的人第一时间找到你'.split('');
-
-const tagRef = ref(null);
-const wordRefs = ref([]);
-let tagObserver = null;
-
-function lightWords() {
-  wordRefs.value.forEach((el, i) => {
-    if (!el) return;
-    el.style.transitionDelay = `${i * 22}ms`;
-    el.classList.add('lit');
-  });
-}
-
-function setWordRef(el, i) {
-  // 用定长下标赋值，避免 splice 打乱顺序
-  if (el) wordRefs.value[i] = el;
-}
-
-onMounted(() => {
-  ownedCount.value = listOwnedCodes().length;
-
-  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  if (reduced || typeof IntersectionObserver === 'undefined') {
-    nextTick(lightWords);
-    return;
-  }
-
-  tagObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        lightWords();
-        tagObserver.disconnect();
-      });
-    },
-    { threshold: 0.35 },
-  );
-  tagObserver.observe(tagRef.value);
-});
-
-onBeforeUnmount(() => {
-  tagObserver?.disconnect();
-});
 </script>
 
 <template>
   <div class="landing">
+    <div class="glow" aria-hidden="true" />
+
     <header class="nav container">
-      <a class="logo" href="/" aria-label="让一让 首页">
-        <BrandMark :size="30" />
+      <div class="logo">
+        <span class="logo-mark"><Icon name="carmove" :size="19" /></span>
         <span class="logo-text">让一让</span>
-      </a>
-      <a class="nav-link" href="/mine">我的车贴</a>
+      </div>
     </header>
 
     <section class="hero container">
@@ -106,12 +64,13 @@ onBeforeUnmount(() => {
       </h1>
 
       <p class="sub">
-        被挡住的人扫一扫就能通知你挪车，号码不用再摆在车窗上。
+        被挡住的人扫一扫就能通知你挪车，<br />
+        号码不用再摆在车窗上。
       </p>
 
       <div class="cta-row">
         <button class="btn btn-primary cta" @click="start">
-          免费生成挪车码
+          {{ '免费生成挪车码' }}
           <Icon name="chevron-right" :size="18" />
         </button>
       </div>
@@ -119,7 +78,7 @@ onBeforeUnmount(() => {
       <button v-if="ownedCount" class="owned" @click="router.push('/mine')">
         <span class="owned-ico"><Icon name="qr" :size="15" /></span>
         <span class="owned-text">这台手机已有 {{ ownedCount }} 张车贴</span>
-        <span class="owned-go">去管理<Icon name="chevron-right" :size="12" /></span>
+        <span class="owned-go">去管理<Icon name="chevron-right" :size="13" /></span>
       </button>
     </section>
 
@@ -129,7 +88,7 @@ onBeforeUnmount(() => {
         <div class="sticker">
           <div class="st-top">
             <div class="st-brand">
-              <BrandMark :size="22" />
+              <span class="st-logo"><Icon name="carmove" :size="14" /></span>
               让一让
             </div>
             <div class="st-qr"><QrArt :size="25" color="#0A1F1A" /></div>
@@ -137,7 +96,7 @@ onBeforeUnmount(() => {
           <div class="st-plate">鄂A·12345</div>
           <div class="st-hint">扫码通知车主挪车</div>
           <div class="st-foot">
-            <Icon name="lock" :size="12" />
+            <Icon name="lock" :size="11" />
             隐私通话 · 号码不显示
           </div>
         </div>
@@ -165,18 +124,6 @@ onBeforeUnmount(() => {
         <strong>1<span>张</span></strong>
         <span>二维码替代号码牌</span>
       </div>
-    </section>
-
-    <!-- Tagline 逐词揭示 -->
-    <section class="tagline container">
-      <p ref="tagRef" class="tag-text">
-        <span
-          v-for="(w, i) in tagWords"
-          :key="i"
-          :ref="(el) => setWordRef(el, i)"
-          class="tw"
-        >{{ w }}</span>
-      </p>
     </section>
 
     <section class="container">
@@ -209,25 +156,16 @@ onBeforeUnmount(() => {
         <div class="mn-body">
           <strong>个人做的小工具，欢迎使用</strong>
           <p>
-            免费、没有广告，也不收集和挪车无关的信息。如果它帮你少等了几分钟，那就值了，欢迎推荐给身边开车的朋友。
+            免费、没有广告，也不收集和挪车无关的信息。如果它帮你少等了几分钟，那就值了——欢迎推荐给身边开车的朋友。
           </p>
-          <span class="mn-sign">独立开发者</span>
+          <span class="mn-sign">— 独立开发者</span>
         </div>
       </div>
     </section>
 
     <footer class="foot container">
-      <div class="foot-brand-row">
-        <BrandMark :size="24" />
-        <p class="foot-brand">让一让</p>
-      </div>
-      <p class="foot-note">扫码挪车 · 隐私优先，不收集与挪车无关的信息</p>
-
-      <nav class="foot-links" aria-label="页脚">
-        <a href="/privacy">隐私政策</a>
-        <a href="/terms">使用条款</a>
-        <a href="/recover">找回管理权</a>
-      </nav>
+      <p>让一让 · 扫码挪车</p>
+      <p class="tiny">隐私优先设计 · 不收集与挪车无关的个人信息</p>
     </footer>
   </div>
 </template>
@@ -236,296 +174,295 @@ onBeforeUnmount(() => {
 .landing {
   position: relative;
   min-height: 100vh;
-  padding-bottom: calc(var(--sp-400) + var(--safe-b));
-  overflow-x: hidden;
+  padding-bottom: calc(30px + var(--safe-b));
+  overflow: hidden;
 }
 
-/* ---- 顶部 ---- */
+.glow {
+  position: absolute;
+  top: -160px;
+  left: 50%;
+  width: 620px;
+  height: 520px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(14, 159, 142, 0.22), transparent 72%);
+  pointer-events: none;
+}
+
 .nav {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  height: 62px;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: var(--sp-75);
+  gap: 8px;
+}
+
+.logo-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logo-text {
   font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
 
 .nav-link {
-  padding: var(--sp-75) var(--sp-50);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
   color: var(--ink-2);
-  transition: color var(--dur-300) var(--ease);
+  padding: 6px 4px;
 }
 
-.nav-link:hover {
-  color: var(--ink);
-}
-
-/* ---- Hero ---- */
 .hero {
-  padding-top: var(--sp-300);
+  position: relative;
+  padding-top: 24px;
 }
 
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-75);
+  gap: 7px;
   height: 28px;
-  padding: 0 var(--sp-100);
+  padding: 0 12px;
   border-radius: 999px;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px rgba(14, 159, 142, 0.2);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(14, 159, 142, 0.22);
   color: var(--brand-dark);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
   background: var(--brand);
+  box-shadow: 0 0 0 3px rgba(14, 159, 142, 0.16);
 }
 
-/* B5：标题走文字渐变（全站唯一允许的渐变），最大 680px */
 .headline {
-  max-width: 680px;
-  margin-top: var(--sp-200);
+  margin-top: 18px;
   font-size: 36px;
-  line-height: 40px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  background: linear-gradient(90deg, #000 0%, #666 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-wrap: balance;
+  line-height: 1.24;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--ink);
 }
 
 .headline em {
-  position: relative;
-  display: inline-block;
   font-style: normal;
-  font-weight: 600;
+  position: relative;
   color: var(--brand-dark);
-  -webkit-text-fill-color: var(--brand-dark);
+  white-space: nowrap;
 }
 
 .headline em::after {
   content: '';
   position: absolute;
-  right: 0;
-  bottom: 2px;
   left: 0;
-  height: 6px;
-  border-radius: 999px;
+  right: 0;
+  bottom: 3px;
+  height: 8px;
+  border-radius: 4px;
   background: rgba(14, 159, 142, 0.22);
+  z-index: -1;
 }
 
 .sub {
-  max-width: 680px;
-  margin-top: var(--sp-200);
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+  margin-top: 14px;
+  font-size: 14.5px;
+  line-height: 1.72;
   color: var(--ink-2);
-  text-wrap: pretty;
 }
 
 .cta-row {
-  margin-top: var(--sp-300);
+  margin-top: 22px;
 }
 
 .cta {
   width: 100%;
-  min-height: 52px;
+  height: 54px;
   font-size: 16px;
+  border-radius: 18px;
 }
 
 /* ---- 本机已生成的车贴入口 ---- */
 .owned {
   display: flex;
   align-items: center;
-  gap: var(--sp-75);
+  gap: 8px;
   width: 100%;
-  margin-top: var(--sp-100);
-  padding: var(--sp-100);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
+  margin-top: 10px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(8px);
   color: var(--ink-2);
-  font-size: 14px;
-  line-height: 20px;
-  text-align: left;
-  transition:
-    background var(--dur-300) var(--ease),
-    transform var(--dur-300) var(--ease);
-}
-
-.owned:active {
-  transform: scale(0.98);
+  font-size: 12px;
 }
 
 .owned-ico {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
   background: var(--brand-soft);
   color: var(--brand-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .owned-text {
   flex: 1;
+  text-align: left;
 }
 
 .owned-go {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-25);
+  gap: 2px;
   color: var(--brand-dark);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* ---- 车贴视觉 ---- */
 .visual {
-  margin-top: var(--sp-400);
+  margin-top: 30px;
 }
 
 .sticker-wrap {
   position: relative;
-  padding: var(--sp-50) var(--sp-50) var(--sp-300);
+  padding: 6px 4px 22px;
 }
 
 .sticker {
   position: relative;
   width: 100%;
-  padding: var(--sp-200) var(--sp-200) var(--sp-100);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow:
-    0 1px 2px rgba(10, 31, 26, 0.04),
-    0 24px 48px rgba(10, 31, 26, 0.14);
-  transform: rotate(-2deg);
-  transition: transform var(--dur-500) var(--ease);
-}
-
-.sticker:hover {
-  transform: rotate(-1deg) translateY(-2px);
+  padding: 16px 18px 14px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 26px 50px rgba(10, 31, 26, 0.16);
+  transform: rotate(-2.4deg);
+  border: 1px solid rgba(10, 31, 26, 0.05);
 }
 
 .st-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--sp-100);
+  gap: 12px;
 }
 
 .st-brand {
   display: flex;
   align-items: center;
-  gap: var(--sp-50);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
   color: var(--ink);
+}
+
+.st-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: var(--brand);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .st-qr {
-  width: 76px;
-  height: 76px;
-  padding: var(--sp-50);
-  border-radius: var(--radius-sm);
+  width: 74px;
+  height: 74px;
+  padding: 5px;
+  border-radius: 10px;
   background: #fff;
-  box-shadow: inset 0 0 0 1px var(--line);
+  box-shadow: 0 2px 10px rgba(10, 31, 26, 0.08);
 }
 
 .st-plate {
-  margin-top: var(--sp-200);
+  margin-top: 14px;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
   color: var(--ink);
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
 }
 
 .st-hint {
-  margin-top: var(--sp-25);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 400;
+  margin-top: 1px;
+  font-size: 12.5px;
   color: var(--ink-2);
+  letter-spacing: 0.4px;
 }
 
 .st-foot {
   display: flex;
   align-items: center;
-  gap: var(--sp-50);
-  margin-top: var(--sp-100);
-  padding-top: var(--sp-100);
-  box-shadow: inset 0 1px 0 var(--line);
-  font-size: 12px;
-  line-height: 16px;
+  gap: 5px;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px dashed var(--line-strong);
+  font-size: 10.5px;
   color: var(--ink-3);
+  letter-spacing: 0.3px;
 }
 
 .float-card {
   position: absolute;
   right: 0;
-  bottom: var(--sp-75);
+  bottom: 2px;
   display: flex;
   align-items: center;
-  gap: var(--sp-75);
-  padding: var(--sp-75) var(--sp-100);
-  border-radius: var(--radius-md);
+  gap: 9px;
+  padding: 10px 14px;
+  border-radius: 14px;
   background: var(--ink);
   color: #fff;
-  box-shadow: 0 12px 28px rgba(10, 31, 26, 0.24);
-  transform: rotate(1.5deg);
+  box-shadow: 0 16px 30px rgba(10, 31, 26, 0.26);
+  transform: rotate(1.6deg);
 }
 
 .float-card strong {
   display: block;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .float-card span {
-  font-size: 12px;
-  line-height: 16px;
-  color: rgba(255, 255, 255, 0.66);
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .pulse {
   width: 8px;
   height: 8px;
-  border-radius: 999px;
+  border-radius: 50%;
   background: #4be3c6;
   box-shadow: 0 0 0 0 rgba(75, 227, 198, 0.7);
-  animation: pulse 2s var(--ease) infinite;
+  animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
@@ -541,95 +478,57 @@ onBeforeUnmount(() => {
 .stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-75);
+  gap: 8px;
+  padding-top: 10px;
 }
 
 .stat {
-  padding: var(--sp-100) var(--sp-50);
   text-align: center;
+  padding: 12px 4px;
 }
 
 .stat strong {
   display: block;
-  color: var(--ink);
   font-size: 24px;
-  line-height: 32px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.5px;
   font-variant-numeric: tabular-nums;
 }
 
 .stat strong span {
-  margin-left: var(--sp-25);
-  color: var(--ink-3);
   font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
+  font-weight: 700;
+  margin-left: 1px;
+  color: var(--ink-3);
 }
 
 .stat > span {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 11px;
   color: var(--ink-3);
 }
 
-/* ---- Tagline 逐词揭示 ---- */
-.tagline {
-  padding-top: var(--sp-700);
-  padding-bottom: var(--sp-400);
-}
-
-.tag-text {
-  max-width: 680px;
-  font-size: 30px;
-  line-height: 40px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  text-wrap: balance;
-}
-
-.tw {
-  color: var(--ink);
-  opacity: 0.28;
-  transition: opacity 500ms var(--ease);
-}
-
-.tw.lit {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tw {
-    opacity: 1;
-    transition: none;
-  }
-}
-
-/* ---- 章节标题 ---- */
 .block-title {
-  margin: var(--sp-600) 0 var(--sp-200);
-  font-size: 20px;
-  line-height: 28px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
+  margin: 30px 0 12px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
 }
 
-/* ---- 步骤 ---- */
 .steps {
   display: flex;
   flex-direction: column;
-  padding: 0 var(--sp-200);
-  border-radius: var(--radius);
+  gap: 2px;
   background: var(--surface);
+  border-radius: var(--radius);
+  padding: 4px 16px;
   box-shadow: var(--shadow-sm);
 }
 
 .steps li {
   display: flex;
-  gap: var(--sp-200);
-  padding: var(--sp-200) 0;
+  gap: 14px;
+  padding: 15px 0;
   border-bottom: 1px solid var(--line);
 }
 
@@ -638,52 +537,47 @@ onBeforeUnmount(() => {
 }
 
 .step-n {
-  flex: none;
-  padding-top: var(--sp-25);
-  color: var(--brand);
   font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 800;
+  color: var(--brand);
+  letter-spacing: 0.5px;
+  padding-top: 2px;
   font-variant-numeric: tabular-nums;
 }
 
 .steps h3 {
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .steps p {
-  margin-top: var(--sp-25);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 400;
+  margin-top: 2px;
+  font-size: 12.5px;
   color: var(--ink-3);
+  line-height: 1.55;
 }
 
 /* ---- 特性 ---- */
 .features {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-100);
+  gap: 10px;
 }
 
 .feature {
-  padding: var(--sp-200);
-  border-radius: var(--radius);
   background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px 15px 17px;
   box-shadow: var(--shadow-sm);
 }
 
-/* 首卡：深色纯色底（不用渐变），跨两列 */
 .feature:first-child {
-  display: grid;
   grid-column: span 2;
+  display: grid;
   grid-template-columns: 40px 1fr;
-  gap: var(--sp-50) var(--sp-100);
+  gap: 4px 12px;
   align-items: center;
-  background: var(--brand-deep);
+  background: linear-gradient(135deg, #0a1f1a 0%, #123a32 100%);
   color: #fff;
 }
 
@@ -693,68 +587,64 @@ onBeforeUnmount(() => {
 }
 
 .feature:first-child p {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.66);
 }
 
 .f-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--brand-soft);
+  color: var(--brand-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin-bottom: var(--sp-100);
-  border-radius: var(--radius-md);
-  background: var(--brand-soft);
-  color: var(--brand-dark);
+  margin-bottom: 10px;
 }
 
 .feature:first-child .f-icon {
   grid-row: span 2;
+  margin-bottom: 0;
   width: 40px;
   height: 40px;
-  margin-bottom: 0;
   background: rgba(75, 227, 198, 0.16);
   color: #4be3c6;
 }
 
 .feature h3 {
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  text-wrap: balance;
+  font-size: 13.5px;
+  font-weight: 700;
 }
 
 .feature p {
-  margin-top: var(--sp-50);
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 400;
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.6;
   color: var(--ink-3);
-  text-wrap: pretty;
 }
 
 /* ---- 个人开发者说明 ---- */
 .maker-note {
   display: flex;
-  gap: var(--sp-100);
-  margin-top: var(--sp-600);
-  padding: var(--sp-200);
+  gap: 12px;
+  margin-top: 18px;
+  padding: 16px 15px;
   border-radius: var(--radius);
-  background: #fffaf0;
-  box-shadow: inset 0 0 0 1px #f0e2c2;
+  background: linear-gradient(135deg, #fffaf0 0%, #fff5e0 100%);
+  border: 1px solid #f0e2c2;
 }
 
 .mn-icon {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
   background: #fff;
   color: #b8860b;
-  box-shadow: 0 1px 2px rgba(184, 134, 11, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.14);
 }
 
 .mn-body {
@@ -764,80 +654,32 @@ onBeforeUnmount(() => {
 
 .mn-body strong {
   display: block;
+  font-size: 12.5px;
+  font-weight: 700;
   color: #6b4e12;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
+  letter-spacing: 0.1px;
 }
 
 .mn-body p {
-  margin-top: var(--sp-50);
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.72;
   color: #8a6d33;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 400;
-  text-wrap: pretty;
 }
 
 .mn-sign {
   display: block;
-  margin-top: var(--sp-75);
+  margin-top: 8px;
+  font-size: 10.5px;
   color: #b08a4a;
-  font-size: 12px;
-  line-height: 16px;
+  letter-spacing: 0.4px;
 }
 
-/* ---- 页脚 ---- */
 .foot {
-  margin-top: var(--sp-700);
-  padding-top: var(--sp-400);
-  border-top: 1px solid var(--line);
+  margin-top: 34px;
   text-align: center;
-}
-
-.foot-brand-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-75);
-}
-
-.foot-brand {
-  color: var(--ink);
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.foot-note {
-  max-width: 320px;
-  margin: var(--sp-50) auto 0;
   color: var(--ink-3);
-  font-size: 14px;
-  line-height: 20px;
-  text-wrap: pretty;
-}
-
-/* 三条链接等距排开，不靠间隔符，避免一行里混着两种疏密 */
-.foot-links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-200);
-  margin-top: var(--sp-300);
-}
-
-.foot-links a {
-  color: var(--ink-3);
-  font-size: 14px;
-  line-height: 20px;
-  white-space: nowrap;
-  transition: color var(--dur-300) var(--ease);
-}
-
-.foot-links a:hover {
-  color: var(--brand-dark);
+  font-size: 11.5px;
+  line-height: 1.8;
 }
 </style>
